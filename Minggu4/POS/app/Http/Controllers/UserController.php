@@ -11,27 +11,56 @@ class UserController extends Controller
 {
     public function index()
     {
-        // Membuat user baru
-        $user = UserModel::create([
-            'username' => 'manager11',
-            'nama' => 'Manager11',
-            'password' => Hash::make('12345'),
-            'level_id' => 2,
+        $user = UserModel::all(); // Mengambil semua data user dari database
+        return view('user', ['data' => $user]); // Mengirim data ke tampilan (view)
+    }
+
+    public function tambah()
+    {
+        return view('user_tambah'); // Menampilkan halaman form tambah user
+    }
+
+    public function tambah_simpan(Request $request)
+    {
+        UserModel::create([
+            'username' => $request->username,
+            'nama' => $request->nama,
+            'password' => Hash::make($request->password), // Perbaikan tanda kutip
+            'level_id' => $request->level_id
         ]);
 
-        // Mengubah username
-        $user->username = 'manager12';
+        return redirect('/user'); // Redirect ke halaman daftar user setelah menyimpan data
+    }
+
+    public function ubah($id)
+    {
+        $user = UserModel::find($id);
+        return view('user_ubah', ['data' => $user]);
+    }
+
+    public function ubah_simpan($id, Request $request)
+    {
+        // Cari user berdasarkan ID
+        $user = UserModel::findOrFail($id);
+
+        // Update data user
+        $user->username = $request->username;
+        $user->nama = $request->nama;
+        $user->password = Hash::make($request->password);
+        $user->level_id = $request->level_id;
 
         // Simpan perubahan
         $user->save();
 
-        // Cek apakah ada perubahan setelah `save()`
-        $user->wasChanged(); // true (karena ada perubahan)
-        $user->wasChanged('username'); // true (username berubah)
-        $user->wasChanged(['username', 'level_id']); // true (karena username berubah, meskipun level_id tidak berubah)
-        $user->wasChanged('nama'); // false (nama tidak berubah)
+        // Redirect ke halaman user
+        return redirect('/user');
+    }
 
-        // Hentikan eksekusi dan tampilkan hasil
-        dd($user->wasChanged(['nama', 'username'])); // true (karena username berubah)
+    public function hapus($id)
+    {
+        $user = UserModel::find($id);
+        $user->delete();
+
+        return redirect('/user');
     }
 }
