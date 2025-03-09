@@ -11,9 +11,16 @@ class UserController extends Controller
 {
     public function index()
     {
-        $user = UserModel::all(); // Mengambil semua data user dari database
-        return view('user', ['data' => $user]); // Mengirim data ke tampilan (view)
+        // Mengambil data user beserta relasi level
+        $user = UserModel::with('level')->get();
+
+        // Mengembalikan data ke view 'user.blade.php'
+        return view('user', ['data' => $user]);
     }
+
+
+
+
 
     public function tambah()
     {
