@@ -34,3 +34,5 @@ Route::delete('/kategori/{id}',
 
 
 
+
+

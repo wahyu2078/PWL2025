@@ -12,6 +12,6 @@ class VerifyCsrfToken extends Middleware
      * @var array<int, string>
      */
     protected $except = [
-        '/kategori', // Pastikan tidak ada kesalahan dalam daftar exception
+        //
     ];
 }

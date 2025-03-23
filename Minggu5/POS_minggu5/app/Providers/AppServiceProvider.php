@@ -3,7 +3,6 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use Yajra\DataTables\Html\Builder;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -20,9 +19,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Jika ingin menggunakan Vite, pastikan ini relevan dengan kebutuhan Anda
-        if (class_exists(Builder::class)) {
-            Builder::useVite();
-        }
+        //
     }
 }
