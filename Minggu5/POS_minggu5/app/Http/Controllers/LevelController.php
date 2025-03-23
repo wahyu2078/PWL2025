@@ -4,25 +4,38 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Yajra\DataTables\Facades\DataTables;
+use App\Models\Level;
 
 class LevelController extends Controller
 {
     public function index()
     {
-        // **INSERT DATA (jika ingin menambah data)**
-        // DB::insert('INSERT INTO m_level (level_kode, level_nama, created_at) VALUES (?, ?, ?)', ['CUS', 'Pelanggan', now()]);
-        // return "Insert data baru berhasil";
-
-        // **UPDATE DATA**
-        // $row = DB::update('UPDATE m_level SET level_nama = ? WHERE level_kode = ?', ['Customer', 'CUS']);
-        // return "Update data berhasil. Jumlah data yang diupdate: " . $row . " baris";
-
-        // **DELETE DATA**
-        // $row = DB::delete('DELETE FROM m_level WHERE level_kode = ?', ['CUS']);
-        // return "Delete data berhasil. Jumlah data yang dihapus: " . $row . " baris";
-
-        // **SELECT DATA**
-        $data = DB::select('SELECT * FROM m_level');
-        return view('level', ['data' => $data]);
+        $breadcrumb = (object) [
+            'title' => 'Daftar Level',
+            'list'  => ['Home', 'Level']
+        ];
+    
+        $page = (object) [
+            'title' => 'Daftar level yang terdaftar dalam sistem'
+        ];
+    
+        $activeMenu = 'level';
+    
+        return view('level.index', compact('breadcrumb', 'page', 'activeMenu'));
+    }
+    
+    public function list(Request $request)
+    {
+        $levels = Level::select('level_id', 'level_kode', 'level_nama');
+    
+        return DataTables::of($levels)
+            ->addIndexColumn()
+            ->addColumn('aksi', function($level) {
+                return '<a href="'.url('/level/'.$level->level_id).'" class="btn btn-info btn-sm">Detail</a>
+                        <a href="'.url('/level/'.$level->level_id.'/edit').'" class="btn btn-warning btn-sm">Edit</a>';
+            })
+            ->rawColumns(['aksi'])
+            ->make(true);
     }
 }

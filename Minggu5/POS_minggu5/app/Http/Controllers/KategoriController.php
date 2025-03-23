@@ -4,39 +4,38 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Yajra\DataTables\Facades\DataTables;
+use App\Models\Kategori;
 
 class KategoriController extends Controller
 {
     public function index()
     {
-        /*
-        // Insert data baru ke dalam tabel m_kategori
-        $data = [
-            'kategori_kode' => 'SNK',
-            'kategori_nama' => 'Snack/Makanan Ringan',
-            'created_at' => now(),
+        $breadcrumb = (object) [
+            'title' => 'Daftar Kategori',
+            'list'  => ['Home', 'Kategori']
         ];
-
-        DB::table('m_kategori')->insert($data);
-        return 'Insert data baru berhasil';
-        */
-
-        /*
-        // Update kategori_nama berdasarkan kategori_kode
-        $row = DB::table('m_kategori')
-                ->where('kategori_kode', 'SNK')
-                ->update(['kategori_nama' => 'Camilan']);
-        return 'Update data berhasil. Jumlah data yang diupdate: ' . $row . ' baris';
-        */
-
-        /*
-        // Hapus data berdasarkan kategori_kode
-        $row = DB::table('m_kategori')->where('kategori_kode', 'SNK')->delete();
-        return 'Delete data berhasil. Jumlah data yang dihapus: ' . $row . ' baris';
-        */
-
-        // Ambil data dari tabel m_kategori
-        $data = DB::table('m_kategori')->get();
-        return view('kategori', ['data' => $data]);
+    
+        $page = (object) [
+            'title' => 'Daftar kategori yang terdaftar dalam sistem'
+        ];
+    
+        $activeMenu = 'kategori';
+    
+        return view('kategori.index', compact('breadcrumb', 'page', 'activeMenu'));
+    }
+    
+    public function list(Request $request)
+    {
+        $kategoris = Kategori::select('kategori_id', 'kategori_kode', 'kategori_nama');
+    
+        return DataTables::of($kategoris)
+            ->addIndexColumn()
+            ->addColumn('aksi', function($kategori) {
+                return '<a href="'.url('/kategori/'.$kategori->kategori_id).'" class="btn btn-info btn-sm">Detail</a>
+                        <a href="'.url('/kategori/'.$kategori->kategori_id.'/edit').'" class="btn btn-warning btn-sm">Edit</a>';
+            })
+            ->rawColumns(['aksi'])
+            ->make(true);
     }
 }
