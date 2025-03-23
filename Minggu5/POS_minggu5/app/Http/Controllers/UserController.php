@@ -16,47 +16,52 @@ class UserController extends Controller
             'title' => 'Daftar User',
             'list' => ['Home', 'User']
         ];
-
+    
         $page = (object) [
             'title' => 'Daftar user yang terdaftar dalam sistem'
         ];
-
-        $activeMenu = 'user';
-
+    
+        $activeMenu = 'user'; // set menu yang sedang aktif
+    
         $level = LevelModel::all(); // ambil data level untuk filter level
-
-        return view('user.index', ['breadcrumb' => $breadcrumb, 'page' => $page, 'level' => $level, 'activeMenu' => $activeMenu]);
+    
+        return view('user.index', [
+            'breadcrumb' => $breadcrumb,
+            'page' => $page,
+            'level' => $level,
+            'activeMenu' => $activeMenu
+        ]);
     }
+    
 
     // Ambil data user dalam bentuk JSON untuk DataTables
     public function list(Request $request)
     {
-        $users = UserModel::select('user_id', 'username', 'nama', 'level_id')
-        ->with('level');
+        $users = UserModel::with('level')->select('user_id', 'username', 'nama', 'level_id');
     
-    return DataTables::of($users)
-        ->addIndexColumn()
+        if ($request->level_id) {
+            $users->where('level_id', $request->level_id); // Filter kalau ada level dipilih
+        }
     
-        // ✨ Tampilkan Level Nama + Kode
-        ->addColumn('level', function ($user) {
-            return $user->level 
-                ? $user->level->level_nama . ' (' . $user->level->level_kode . ')' 
-                : 'Tidak ada level';
-        })
-    
-        ->addColumn('aksi', function ($user) {
-            $btn = '<a href="' . url('/user/' . $user->user_id) . '" class="btn btn-info btn-sm">Detail</a> ';
-            $btn .= '<a href="' . url('/user/' . $user->user_id . '/edit') . '" class="btn btn-warning btn-sm">Edit</a> ';
-            $btn .= '<form class="d-inline-block" method="POST" action="' .
-                url('/user/' . $user->user_id) . '">'
-                . csrf_field() . method_field('DELETE') .
-                '<button type="submit" class="btn btn-danger btn-sm" onclick="return confirm(\'Apakah Anda yakin menghapus data ini?\');">Hapus</button></form>';
-            return $btn;
-        })
-        ->rawColumns(['aksi'])
-        ->make(true);
-    
+        return DataTables::of($users)
+            ->addIndexColumn()
+            ->addColumn('level', function ($user) {
+                return $user->level 
+                    ? $user->level->level_nama . ' (' . $user->level->level_kode . ')' 
+                    : 'Tidak ada level';
+            })
+            ->addColumn('aksi', function ($user) {
+                return '
+                    <a href="' . url('/user/' . $user->user_id) . '" class="btn btn-info btn-sm">Detail</a>
+                    <a href="' . url('/user/' . $user->user_id . '/edit') . '" class="btn btn-warning btn-sm">Edit</a>
+                    <form class="d-inline-block" method="POST" action="' . url('/user/' . $user->user_id) . '">' 
+                    . csrf_field() . method_field('DELETE') . 
+                    '<button type="submit" class="btn btn-danger btn-sm" onclick="return confirm(\'Yakin ingin menghapus data ini?\');">Hapus</button></form>';
+            })
+            ->rawColumns(['aksi'])
+            ->make(true);
     }
+    
 
 
     public function create()
