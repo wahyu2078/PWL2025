@@ -7,8 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class LevelModel extends Model
 {
-    use HasFactory;
+    protected $table = 'm_level';
+    protected $primaryKey = 'level_id';
 
-    protected $table = 'm_level'; // Pastikan nama tabel sesuai
-    protected $primaryKey = 'level_id'; // Sesuaikan primary key dengan database
+    public function users()
+    {
+        return $this->hasMany(UserModel::class, 'level_id', 'level_id');
+    }
 }
