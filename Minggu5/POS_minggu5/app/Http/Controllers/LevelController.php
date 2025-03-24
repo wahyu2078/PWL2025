@@ -22,10 +22,10 @@ class LevelController extends Controller
     
         $activeMenu = 'level';
     
-        // 🚀 Ambil distinct level_kode buat dropdown filter
+        //  Ambil distinct level_kode buat dropdown filter
         $level_kode = LevelModel::select('level_kode')->distinct()->get();
     
-        // 🔥 Kirim $level_kode ke view
+        //  Kirim $level_kode ke view
         return view('level.index', compact('breadcrumb', 'page', 'activeMenu', 'level_kode'));
     }
 
