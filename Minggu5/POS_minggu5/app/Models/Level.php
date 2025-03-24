@@ -9,12 +9,9 @@ class Level extends Model
 {
     use HasFactory;
 
-    protected $table = 'm_level'; // Nama tabel
-    protected $primaryKey = 'level_id'; // Primary key
-    public $timestamps = true; // Menggunakan timestamps (created_at, updated_at)
-
-    protected $fillable = [
-        'level_kode',
-        'level_nama',
-    ];
+    protected $table = 'm_level';
+    protected $primaryKey = 'level_id';
+    
+    //  Tambahkan fillable agar bisa insert data
+    protected $fillable = ['level_kode', 'level_nama'];
 }
