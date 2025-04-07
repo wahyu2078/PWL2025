@@ -6,31 +6,16 @@
         <h3 class="card-title">{{ $page->title }}</h3>
         <div class="card-tools">
             <a class="btn btn-sm btn-primary mt-1" href="{{ url('level/create') }}">Tambah</a>
+            <button class="btn btn-sm btn-success mt-1" data-url="{{ url('/level/create_ajax') }}" onclick="modalAction(this.getAttribute('data-url'))">Tambah Ajax</button>
         </div>
     </div>
-
     <div class="card-body">
         @if (session('success'))
-            <div class="alert alert-success">{{ session('success') }}</div>
+        <div class="alert alert-success">{{ session('success') }}</div>
         @endif
         @if (session('error'))
-            <div class="alert alert-danger">{{ session('error') }}</div>
+        <div class="alert alert-danger">{{ session('error') }}</div>
         @endif
-
-        <!--  Filter Dropdown Kode Level -->
-        <div class="row mb-3">
-            <div class="col-md-3">
-                <label for="filter_kode">Filter Kode Level:</label>
-                <select class="form-control" id="filter_kode">
-                    <option value="">- Semua Kode Level -</option>
-                    @foreach ($level_kode as $kode)
-                        <option value="{{ $kode->level_kode }}">{{ $kode->level_kode }}</option>
-                    @endforeach
-                </select>
-            </div>
-        </div>
-
-        <!-- Tabel Data -->
         <table class="table table-bordered table-hover table-sm" id="table_level">
             <thead>
                 <tr>
@@ -43,6 +28,9 @@
         </table>
     </div>
 </div>
+<div id="myModal" class="modal fade animate shake" tabindex="-1" role="dialog"
+    data-backdrop="static" data-keyboard="false" data-width="75%" aria-hidden="true">
+</div>
 @endsection
 
 @push('css')
@@ -51,28 +39,41 @@
 
 @push('js')
 <script>
+    function modalAction(url = '') {
+        $('#myModal').load(url, function() {
+            $('#myModal').modal('show');
+        });
+    }
     $(document).ready(function() {
-        // Inisialisasi DataTable
-        let dataLevel = $('#table_level').DataTable({
+        var dataLevel = $('#table_level').DataTable({
             serverSide: true,
-            processing: true,
             ajax: {
                 url: "{{ url('level/list') }}",
-                type: "POST",
-                data: function (d) {
-                    d.filter_kode = $('#filter_kode').val(); // Kirim kode level terpilih
-                }
+                dataType: "json",
+                type: "POST"
             },
-            columns: [
-                { data: "DT_RowIndex", className: "text-center", orderable: false, searchable: false },
-                { data: "level_kode", orderable: true, searchable: true },
-                { data: "level_nama", orderable: true, searchable: true },
-                { data: "aksi", orderable: false, searchable: false }
+            columns: [{
+                    data: "DT_RowIndex",
+                    className: "text-center",
+                    orderable: false,
+                    searchable: false
+                },
+                {
+                    data: "level_kode",
+                    orderable: true,
+                    searchable: true
+                },
+                {
+                    data: "level_nama",
+                    orderable: true,
+                    searchable: true
+                },
+                {
+                    data: "aksi",
+                    orderable: false,
+                    searchable: false
+                }
             ]
-        });
-
-        $('#filter_kode').on('change', function() {
-            dataLevel.ajax.reload(); // Reload tabel saat filter dropdown diubah
         });
     });
 </script>
