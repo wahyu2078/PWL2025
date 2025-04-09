@@ -18,11 +18,17 @@
     <ul class="navbar-nav ml-auto">
         <!-- Info Login -->
         @auth
-        <li class="nav-item">
-            <a class="nav-link disabled" href="#">
-                <i class="fas fa-user"></i>
+        <li class="nav-item d-flex align-items-center">
+            @php
+                $foto = Auth::user()->foto ?? null;
+                $fotoPath = $foto && file_exists(public_path('uploads/user/' . $foto))
+                    ? asset('uploads/user/' . $foto)
+                    : asset('images/default.png');
+            @endphp
+            <img src="{{ $fotoPath }}" alt="Foto Profil" width="32" height="32" class="rounded-circle mr-2" style="object-fit: cover; border: 2px solid #ddd;">
+            <span class="nav-link disabled">
                 {{ Auth::user()->nama }} ({{ Auth::user()->getRoleName() }})
-            </a>
+            </span>
         </li>
         @endauth
 

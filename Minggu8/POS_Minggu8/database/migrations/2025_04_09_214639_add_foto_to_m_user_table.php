@@ -11,15 +11,15 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::table('barang', function (Blueprint $table) {
-            $table->string('barang_foto')->nullable()->after('barang_nama');
+        Schema::table('m_user', function (Blueprint $table) {
+            $table->string('foto')->nullable()->after('level_id');
         });
     }
     
     public function down()
     {
-        Schema::table('barang', function (Blueprint $table) {
-            $table->dropColumn('barang_foto');
+        Schema::table('m_user', function (Blueprint $table) {
+            $table->dropColumn('foto');
         });
     }
     
