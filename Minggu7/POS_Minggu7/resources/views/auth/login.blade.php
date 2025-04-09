@@ -61,6 +61,12 @@
                             <button type="submit" class="btn btn-primary btn-block">Sign In</button>
                         </div>
                     </div>
+
+                    <!-- Tambahkan tombol register -->
+                    <div class="text-center mt-3">
+                        <a href="{{ route('register') }}" class="btn btn-outline-secondary btn-block">Daftar / Register</a>
+                    </div>
+
                 </form>
             </div>
         </div>
