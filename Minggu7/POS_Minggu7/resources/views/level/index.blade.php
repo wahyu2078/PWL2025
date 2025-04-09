@@ -10,9 +10,7 @@
         </div>
     </div>
     <div class="card-body">
-        @if (session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
-        @endif
+
         @if (session('error'))
         <div class="alert alert-danger">{{ session('error') }}</div>
         @endif
@@ -44,6 +42,8 @@
             $('#myModal').modal('show');
         });
     }
+
+    var dataLevel;
     $(document).ready(function() {
         var dataLevel = $('#table_level').DataTable({
             serverSide: true,
