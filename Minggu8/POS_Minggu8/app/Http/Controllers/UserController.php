@@ -12,6 +12,7 @@ use Illuminate\Support\Str;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Auth;
 
 
 class UserController extends Controller
@@ -46,11 +47,11 @@ class UserController extends Controller
     {
         $users = UserModel::select('user_id', 'username', 'nama', 'level_id', 'foto')
             ->with('level');
-    
+
         if ($request->level_id) {
             $users->where('level_id', $request->level_id);
         }
-    
+
         return DataTables::of($users)
             ->addIndexColumn()
             ->addColumn('foto', function ($user) {
@@ -73,7 +74,7 @@ class UserController extends Controller
             ->rawColumns(['foto', 'aksi'])
             ->make(true);
     }
-    
+
 
 
     public function create()
@@ -227,7 +228,7 @@ class UserController extends Controller
         $level = LevelModel::select('level_id', 'level_nama')->get();
         return view('user.create_ajax')->with('level', $level);
     }
-    
+
 
 
     public function store_ajax(Request $request)
@@ -240,7 +241,7 @@ class UserController extends Controller
                 'password' => 'required|min:6',
                 'foto'     => 'nullable|image|mimes:jpg,jpeg,png|max:1024',
             ];
-    
+
             $validator = Validator::make($request->all(), $rules);
             if ($validator->fails()) {
                 return response()->json([
@@ -249,10 +250,10 @@ class UserController extends Controller
                     'msgField' => $validator->errors(),
                 ]);
             }
-    
+
             $data = $request->only(['username', 'nama', 'password', 'level_id']);
             $data['password'] = bcrypt($data['password']);
-    
+
             // Upload foto jika ada
             if ($request->hasFile('foto')) {
                 $foto = $request->file('foto');
@@ -260,85 +261,85 @@ class UserController extends Controller
                 $foto->move(public_path('uploads/user'), $namaFile);
                 $data['foto'] = $namaFile;
             }
-    
+
             UserModel::create($data);
-    
+
             return response()->json([
                 'status' => true,
                 'message' => 'Data user berhasil disimpan',
             ]);
         }
-    
+
         return redirect('/');
     }
-    
+
 
 
     public function edit_ajax($id)
-{
-    $user = UserModel::find($id);
-    $level = LevelModel::select('level_id', 'level_nama')->get();
-    return view('user.edit_ajax', compact('user', 'level'));
-}
-
-
-public function update_ajax(Request $request, $id)
-{
-    if ($request->ajax() || $request->wantsJson()) {
-        $rules = [
-            'level_id' => 'required|integer',
-            'username' => 'required|max:20|unique:m_user,username,' . $id . ',user_id',
-            'nama'     => 'required|max:100',
-            'password' => 'nullable|min:6|max:20',
-            'foto'     => 'nullable|image|mimes:jpg,jpeg,png|max:1024',
-        ];
-
-        $validator = Validator::make($request->all(), $rules);
-        if ($validator->fails()) {
-            return response()->json([
-                'status'    => false,
-                'msgField'  => $validator->errors(),
-            ]);
-        }
-
+    {
         $user = UserModel::find($id);
-        if ($user) {
-            $user->username = $request->username;
-            $user->nama     = $request->nama;
-            $user->level_id = $request->level_id;
-
-            if ($request->filled('password')) {
-                $user->password = bcrypt($request->password);
-            }
-
-            if ($request->hasFile('foto')) {
-                // Hapus foto lama jika ada
-                if ($user->foto && file_exists(public_path('uploads/user/' . $user->foto))) {
-                    unlink(public_path('uploads/user/' . $user->foto));
-                }
-
-                $foto = $request->file('foto');
-                $namaFile = uniqid() . '.' . $foto->getClientOriginalExtension();
-                $foto->move(public_path('uploads/user'), $namaFile);
-                $user->foto = $namaFile;
-            }
-
-            $user->save();
-
-            return response()->json([
-                'status' => true,
-                'message' => 'Data berhasil diupdate'
-            ]);
-        }
-
-        return response()->json([
-            'status' => false,
-            'message' => 'Data tidak ditemukan'
-        ]);
+        $level = LevelModel::select('level_id', 'level_nama')->get();
+        return view('user.edit_ajax', compact('user', 'level'));
     }
 
-    return redirect('/');
-}
+
+    public function update_ajax(Request $request, $id)
+    {
+        if ($request->ajax() || $request->wantsJson()) {
+            $rules = [
+                'level_id' => 'required|integer',
+                'username' => 'required|max:20|unique:m_user,username,' . $id . ',user_id',
+                'nama'     => 'required|max:100',
+                'password' => 'nullable|min:6|max:20',
+                'foto'     => 'nullable|image|mimes:jpg,jpeg,png|max:1024',
+            ];
+
+            $validator = Validator::make($request->all(), $rules);
+            if ($validator->fails()) {
+                return response()->json([
+                    'status'    => false,
+                    'msgField'  => $validator->errors(),
+                ]);
+            }
+
+            $user = UserModel::find($id);
+            if ($user) {
+                $user->username = $request->username;
+                $user->nama     = $request->nama;
+                $user->level_id = $request->level_id;
+
+                if ($request->filled('password')) {
+                    $user->password = bcrypt($request->password);
+                }
+
+                if ($request->hasFile('foto')) {
+                    // Hapus foto lama jika ada
+                    if ($user->foto && file_exists(public_path('uploads/user/' . $user->foto))) {
+                        unlink(public_path('uploads/user/' . $user->foto));
+                    }
+
+                    $foto = $request->file('foto');
+                    $namaFile = uniqid() . '.' . $foto->getClientOriginalExtension();
+                    $foto->move(public_path('uploads/user'), $namaFile);
+                    $user->foto = $namaFile;
+                }
+
+                $user->save();
+
+                return response()->json([
+                    'status' => true,
+                    'message' => 'Data berhasil diupdate'
+                ]);
+            }
+
+            return response()->json([
+                'status' => false,
+                'message' => 'Data tidak ditemukan'
+            ]);
+        }
+
+        return redirect('/');
+    }
 
 
     public function confirm_ajax(string $id)
@@ -504,5 +505,41 @@ public function update_ajax(Request $request, $id)
         $pdf->setOption('isRemoteEnabled', true); // jika ada logo/gambar
 
         return $pdf->stream('Data_User_' . date('Ymd_His') . '.pdf');
+    }
+
+    public function profile()
+    {
+        $user = Auth::user();
+        $activeMenu = 'profile'; // Tambahkan ini
+    
+        return view('user.profile', compact('user', 'activeMenu'));
+    }
+
+    public function updateProfile(Request $request)
+    {
+        /** @var UserModel $user */
+        $user = Auth::user();
+
+        // Validasi input
+        $request->validate([
+            'nama' => 'required|string|max:100',
+            'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
+        ]);
+
+        // Update nama
+        $user->nama = $request->nama;
+
+        // Cek dan upload file foto jika ada
+        if ($request->hasFile('foto')) {
+            $foto = $request->file('foto');
+            $filename = 'user_' . time() . '.' . $foto->getClientOriginalExtension();
+            $foto->move(public_path('uploads/user'), $filename);
+            $user->foto = $filename;
+        }
+
+        // Simpan data
+        $user->save();
+
+        return redirect('/profile')->with('success', 'Profil berhasil diperbarui.');
     }
 }

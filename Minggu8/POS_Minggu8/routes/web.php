@@ -157,3 +157,6 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/export_pdf', [BarangController::class, 'export_pdf']);
     });
 });
+
+Route::get('/profile', [UserController::class, 'profile'])->middleware('auth');
+Route::post('/profile', [UserController::class, 'updateProfile'])->middleware('auth');

@@ -20,17 +20,18 @@
         @auth
         <li class="nav-item d-flex align-items-center">
             @php
-                $foto = Auth::user()->foto ?? null;
-                $fotoPath = $foto && file_exists(public_path('uploads/user/' . $foto))
-                    ? asset('uploads/user/' . $foto)
-                    : asset('images/default.png');
+            $foto = Auth::user()->foto ?? null;
+            $fotoPath = $foto && file_exists(public_path('uploads/user/' . $foto))
+            ? asset('uploads/user/' . $foto)
+            : asset('images/default.png');
             @endphp
-            <img src="{{ $fotoPath }}" alt="Foto Profil" width="32" height="32" class="rounded-circle mr-2" style="object-fit: cover; border: 2px solid #ddd;">
-            <span class="nav-link disabled">
+            <a href="{{ url('/profile') }}" class="nav-link d-flex align-items-center">
+                <img src="{{ $fotoPath }}" alt="Foto Profil" width="32" height="32" class="rounded-circle mr-2" style="object-fit: cover; border: 2px solid #ddd;">
                 {{ Auth::user()->nama }} ({{ Auth::user()->getRoleName() }})
-            </span>
+            </a>
         </li>
         @endauth
+
 
         <!-- Search -->
         <li class="nav-item">
@@ -71,7 +72,7 @@
         <!-- Logout -->
         <li class="nav-item">
             <a href="{{ url('/logout') }}" class="nav-link"
-               onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                 <i class="fas fa-sign-out-alt"></i> Logout
             </a>
             <form id="logout-form" action="{{ url('/logout') }}" method="GET" style="display: none;">
