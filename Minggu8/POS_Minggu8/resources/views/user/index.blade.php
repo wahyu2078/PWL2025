@@ -11,6 +11,9 @@
             <a href="{{ url('/user/export_excel') }}" class="btn btn-sm btn-primary mt-1">
                 <i class="fa fa-file-excel-o"></i> Export Excel
             </a>
+            <a href="{{ url('user/export_pdf') }}" class="btn btn-sm btn-warning mt-1">
+                <i class="fa fa-file-pdf-o"></i> Export PDF
+            </a>
         </div>
     </div>
 

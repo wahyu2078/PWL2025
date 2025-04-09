@@ -9,6 +9,7 @@ use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\Validator;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 
 class UserController extends Controller
@@ -427,5 +428,26 @@ class UserController extends Controller
 
         $writer->save('php://output');
         exit;
+    }
+
+    public function export_pdf()
+    {
+        // Tambah batas waktu eksekusi (jika diperlukan)
+        set_time_limit(60); // aman karena hanya beberapa data
+
+        // Ambil maksimal 10 data user beserta level
+        $users = \App\Models\UserModel::with('level')
+            ->select('username', 'nama', 'level_id')
+            ->orderBy('level_id')
+            ->orderBy('username')
+            ->limit(10)
+            ->get();
+
+        // Generate PDF dari view
+        $pdf = Pdf::loadView('user.export_pdf', ['users' => $users]);
+        $pdf->setPaper('a4', 'portrait');
+        $pdf->setOption('isRemoteEnabled', true); // jika ada logo/gambar
+
+        return $pdf->stream('Data_User_' . date('Ymd_His') . '.pdf');
     }
 }

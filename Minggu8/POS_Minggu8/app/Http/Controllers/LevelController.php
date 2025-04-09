@@ -8,6 +8,7 @@ use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\Validator;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class LevelController extends Controller
 {
@@ -315,5 +316,23 @@ class LevelController extends Controller
         // Output file ke browser
         $writer->save('php://output');
         exit;
+    }
+
+    public function export_pdf()
+    {
+        // Tambah batas waktu eksekusi jika dibutuhkan
+        set_time_limit(60); // aman karena datanya sedikit
+
+        // Ambil semua data level (atau limit jika mau dibatasi)
+        $levels = \App\Models\LevelModel::select('level_kode', 'level_nama')
+            ->orderBy('level_kode')
+            ->get();
+
+        // Generate PDF dari view
+        $pdf = Pdf::loadView('level.export_pdf', ['levels' => $levels]);
+        $pdf->setPaper('a4', 'portrait');
+        $pdf->setOption('isRemoteEnabled', true); // jika ada gambar/logo
+
+        return $pdf->stream('Data_Level_' . date('Ymd_His') . '.pdf');
     }
 }

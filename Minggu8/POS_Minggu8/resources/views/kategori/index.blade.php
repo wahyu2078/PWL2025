@@ -11,6 +11,9 @@
             <a href="{{ url('/kategori/export_excel') }}" class="btn btn-sm btn-primary mt-1">
                 <i class="fa fa-file-excel-o"></i> Export Excel
             </a>
+            <a href="{{ url('/kategori/export_pdf') }}" class="btn btn-warning btn-sm mt-1">
+                <i class="fa fa-file-pdf-o"></i> Export PDF
+            </a>
         </div>
     </div>
     <div class="card-body">
