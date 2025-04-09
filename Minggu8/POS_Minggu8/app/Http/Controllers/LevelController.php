@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\Validator;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
 
 class LevelController extends Controller
 {
@@ -17,16 +18,16 @@ class LevelController extends Controller
             'title' => 'Daftar Level',
             'list'  => ['Home', 'Level']
         ];
-    
+
         $page = (object) [
             'title' => 'Daftar level yang terdaftar dalam sistem'
         ];
-    
+
         $activeMenu = 'level';
-    
+
         //  Ambil distinct level_kode buat dropdown filter
         $level_kode = LevelModel::select('level_kode')->distinct()->get();
-    
+
         //  Kirim $level_kode ke view
         return view('level.index', compact('breadcrumb', 'page', 'activeMenu', 'level_kode'));
     }
@@ -35,7 +36,7 @@ class LevelController extends Controller
     public function list(Request $request)
     {
         $levels = LevelModel::select('level_id', 'level_kode', 'level_nama');
-        
+
         return DataTables::of($levels)
             ->addIndexColumn()
             ->addColumn('aksi', function ($level) {
@@ -72,16 +73,16 @@ class LevelController extends Controller
             'level_kode' => 'required|string|min:3|unique:m_level,level_kode',
             'level_nama' => 'required|string|max:100', // Sesuaikan dengan field di tabel
         ]);
-    
+
         LevelModel::create([
             'level_kode' => $request->level_kode,
             'level_nama' => $request->level_nama,
         ]);
-    
+
         //  Pastikan redirect ke '/level'
         return redirect('/level')->with('success', 'Data level berhasil disimpan');
     }
-    
+
 
     // Menampilkan detail level
     public function show(string $id)
@@ -141,7 +142,7 @@ class LevelController extends Controller
     public function destroy(string $id)
     {
         $check = LevelModel::find($id);
-        if (!$check) { 
+        if (!$check) {
             return redirect('/level')->with('error', 'Data level tidak ditemukan');
         }
 
@@ -223,45 +224,96 @@ class LevelController extends Controller
     }
 
     public function import()
-{
-    return view('level.import');
-}
+    {
+        return view('level.import');
+    }
 
-public function import_ajax(Request $request)
-{
-    $request->validate([
-        'file_level' => 'required|mimes:xlsx|max:1024'
-    ]);
+    public function import_ajax(Request $request)
+    {
+        $request->validate([
+            'file_level' => 'required|mimes:xlsx|max:1024'
+        ]);
 
-    $file = $request->file('file_level');
-    $reader = IOFactory::createReader('Xlsx');
-    $reader->setReadDataOnly(true);
-    $spreadsheet = $reader->load($file->getRealPath());
-    $sheet = $spreadsheet->getActiveSheet();
-    $data = $sheet->toArray(null, false, true, true);
+        $file = $request->file('file_level');
+        $reader = IOFactory::createReader('Xlsx');
+        $reader->setReadDataOnly(true);
+        $spreadsheet = $reader->load($file->getRealPath());
+        $sheet = $spreadsheet->getActiveSheet();
+        $data = $sheet->toArray(null, false, true, true);
 
-    $insert = [];
+        $insert = [];
 
-    foreach ($data as $i => $row) {
-        if ($i == 1) continue; // Skip header
-        if (!empty($row['A']) && !empty($row['B'])) {
-            $exists = \App\Models\LevelModel::where('level_kode', $row['A'])->exists();
-            if (!$exists) {
-                $insert[] = [
-                    'level_kode' => $row['A'],
-                    'level_nama' => $row['B'],
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ];
+        foreach ($data as $i => $row) {
+            if ($i == 1) continue; // Skip header
+            if (!empty($row['A']) && !empty($row['B'])) {
+                $exists = \App\Models\LevelModel::where('level_kode', $row['A'])->exists();
+                if (!$exists) {
+                    $insert[] = [
+                        'level_kode' => $row['A'],
+                        'level_nama' => $row['B'],
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ];
+                }
             }
+        }
+
+        if (count($insert) > 0) {
+            \App\Models\LevelModel::insertOrIgnore($insert);
+            return response()->json(['status' => true, 'message' => 'Data level berhasil diimport']);
+        } else {
+            return response()->json(['status' => false, 'message' => 'Tidak ada data baru yang diimport']);
         }
     }
 
-    if (count($insert) > 0) {
-        \App\Models\LevelModel::insertOrIgnore($insert);
-        return response()->json(['status' => true, 'message' => 'Data level berhasil diimport']);
-    } else {
-        return response()->json(['status' => false, 'message' => 'Tidak ada data baru yang diimport']);
+    public function export_excel()
+    {
+        // Ambil semua data level
+        $levels = \App\Models\LevelModel::select('level_kode', 'level_nama')
+            ->orderBy('level_kode')
+            ->get();
+
+        // Buat spreadsheet baru
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Data Level');
+
+        // Header kolom
+        $sheet->setCellValue('A1', 'No');
+        $sheet->setCellValue('B1', 'Kode Level');
+        $sheet->setCellValue('C1', 'Nama Level');
+        $sheet->getStyle('A1:C1')->getFont()->setBold(true);
+
+        // Isi data dari baris ke-2
+        $no = 1;
+        $baris = 2;
+        foreach ($levels as $level) {
+            $sheet->setCellValue('A' . $baris, $no++);
+            $sheet->setCellValue('B' . $baris, $level->level_kode);
+            $sheet->setCellValue('C' . $baris, $level->level_nama);
+            $baris++;
+        }
+
+        // Atur lebar kolom otomatis
+        foreach (range('A', 'C') as $columnID) {
+            $sheet->getColumnDimension($columnID)->setAutoSize(true);
+        }
+
+        // Siapkan writer dan nama file
+        $writer = IOFactory::createWriter($spreadsheet, 'Xlsx');
+        $filename = 'Data_Level_' . date('Ymd_His') . '.xlsx';
+
+        // Header response
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        header('Cache-Control: max-age=0');
+        header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
+        header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT');
+        header('Cache-Control: cache, must-revalidate');
+        header('Pragma: public');
+
+        // Output file ke browser
+        $writer->save('php://output');
+        exit;
     }
-}
 }

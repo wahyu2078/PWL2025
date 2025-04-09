@@ -10,6 +10,9 @@
             <button class="btn btn-sm btn-info mt-1" data-url="{{ url('/level/import') }}" onclick="modalAction(this.getAttribute('data-url'))">
                 Import Excel
             </button>
+            <a href="{{ url('/level/export_excel') }}" class="btn btn-sm btn-primary mt-1">
+                <i class="fa fa-file-excel-o"></i> Export Excel
+            </a>
         </div>
     </div>
 

@@ -8,14 +8,17 @@
             <a class="btn btn-sm btn-primary mt-1" href="{{ url('kategori/create') }}">Tambah</a>
             <button class="btn btn-sm btn-success mt-1" data-url="{{ url('/kategori/create_ajax') }}" onclick="modalAction(this.getAttribute('data-url'))">Tambah Ajax</button>
             <button class="btn btn-sm btn-info mt-1" data-url="{{ url('/kategori/import') }}" onclick="modalAction(this.getAttribute('data-url'))">Import</button>
+            <a href="{{ url('/kategori/export_excel') }}" class="btn btn-sm btn-primary mt-1">
+                <i class="fa fa-file-excel-o"></i> Export Excel
+            </a>
         </div>
     </div>
     <div class="card-body">
         @if (session('success'))
-            <div class="alert alert-success">{{ session('success') }}</div>
+        <div class="alert alert-success">{{ session('success') }}</div>
         @endif
         @if (session('error'))
-            <div class="alert alert-danger">{{ session('error') }}</div>
+        <div class="alert alert-danger">{{ session('error') }}</div>
         @endif
         <table class="table table-bordered table-hover table-sm" id="table_kategori">
             <thead>
@@ -29,9 +32,9 @@
         </table>
     </div>
 </div>
-<div id="myModal" class="modal fade animate shake" tabindex="-1" role="dialog" 
-     data-backdrop="static" data-keyboard="false" data-width="75%" aria-hidden="true">
- </div>
+<div id="myModal" class="modal fade animate shake" tabindex="-1" role="dialog"
+    data-backdrop="static" data-keyboard="false" data-width="75%" aria-hidden="true">
+</div>
 @endsection
 
 @push('css')
@@ -40,11 +43,11 @@
 
 @push('js')
 <script>
-        function modalAction(url = '') {
-             $('#myModal').load(url, function() {
-                 $('#myModal').modal('show');
-             });
-         }
+    function modalAction(url = '') {
+        $('#myModal').load(url, function() {
+            $('#myModal').modal('show');
+        });
+    }
     $(document).ready(function() {
         var dataLevel = $('#table_kategori').DataTable({
             serverSide: true,
@@ -53,8 +56,7 @@
                 dataType: "json",
                 type: "POST"
             },
-            columns: [
-                {
+            columns: [{
                     data: "DT_RowIndex",
                     className: "text-center",
                     orderable: false,

@@ -8,8 +8,9 @@
             <a class="btn btn-sm btn-primary mt-1" href="{{ url('user/create') }}">Tambah</a>
             <button class="btn btn-sm btn-success mt-1" data-url="{{ url('/user/create_ajax') }}" onclick="modalAction(this.getAttribute('data-url'))">Tambah Ajax</button>
             <button class="btn btn-sm btn-info mt-1" data-url="{{ url('/user/import') }}" onclick="modalAction(this.getAttribute('data-url'))">Import</button>
-            <a class="btn btn-sm btn-primary mt-1" href="{{ url('user/export_excel') }}">Export Excel</a>
-            <a class="btn btn-sm btn-warning mt-1" href="{{ url('user/export_pdf') }}">Export PDF</a>
+            <a href="{{ url('/user/export_excel') }}" class="btn btn-sm btn-primary mt-1">
+                <i class="fa fa-file-excel-o"></i> Export Excel
+            </a>
         </div>
     </div>
 

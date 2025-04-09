@@ -8,6 +8,8 @@ use App\Models\LevelModel;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\Validator;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+
 
 class UserController extends Controller
 {
@@ -41,17 +43,17 @@ class UserController extends Controller
     {
         $users = UserModel::select('user_id', 'username', 'nama', 'level_id')
             ->with('level');
-    
+
         // Filter data user berdasarkan level_id
         if ($request->level_id) {
             $users->where('level_id', $request->level_id);
         }
-    
+
         return DataTables::of($users)
             ->addIndexColumn() // menambahkan kolom index / no urut (default nama kolom: DT_RowIndex)
             ->addColumn('level', function ($user) {
-                return $user->level 
-                    ? $user->level->level_nama . ' (' . $user->level->level_kode . ')' 
+                return $user->level
+                    ? $user->level->level_nama . ' (' . $user->level->level_kode . ')'
                     : 'Tidak ada level';
             })
             ->addColumn('aksi', function ($user) {
@@ -66,7 +68,7 @@ class UserController extends Controller
             ->rawColumns(['aksi']) // memberitahu bahwa kolom aksi adalah html
             ->make(true);
     }
-    
+
 
     public function create()
     {
@@ -193,11 +195,12 @@ class UserController extends Controller
         }
     }
 
-    public function create_ajax() {
+    public function create_ajax()
+    {
         $level = LevelModel::select('level_id', 'level_nama')->get();
 
         return view('user.create_ajax')
-            -> with('level', $level);
+            ->with('level', $level);
     }
 
 
@@ -241,42 +244,45 @@ class UserController extends Controller
         return view('user.edit_ajax', ['user' => $user, 'level' => $level]);
     }
 
-    public function update_ajax(Request $request, $id){
+    public function update_ajax(Request $request, $id)
+    {
         // cek apakah request dari ajax
         if ($request->ajax() || $request->wantsJson()) {
-        $rules = [
-        'level_id' => 'required|integer',
-        'username' => 'required|max:20|unique:m_user,username,'.$id.',user_id', 'nama'	=> 'required|max:100',
-        'password' => 'nullable|min:6|max:20'
-        ];
-        // use Illuminate\Support\Facades\Validator;
-        $validator = Validator::make($request->all(), $rules);
+            $rules = [
+                'level_id' => 'required|integer',
+                'username' => 'required|max:20|unique:m_user,username,' . $id . ',user_id',
+                'nama'    => 'required|max:100',
+                'password' => 'nullable|min:6|max:20'
+            ];
+            // use Illuminate\Support\Facades\Validator;
+            $validator = Validator::make($request->all(), $rules);
 
-        if ($validator->fails()) { return response()->json([
-        'status'	=> false,	// respon json, true: berhasil, false: gagal 'message' => 'Validasi gagal.',
-        'msgField' => $validator->errors() // menunjukkan field mana yang error
-        ]);
-        }
-
-        $check = UserModel::find($id); 
-        if ($check) {
-            if(!$request->filled('password') ){ // jika password tidak diisi, maka hapus dari request
-                $request->request->remove('password');
+            if ($validator->fails()) {
+                return response()->json([
+                    'status'    => false,    // respon json, true: berhasil, false: gagal 'message' => 'Validasi gagal.',
+                    'msgField' => $validator->errors() // menunjukkan field mana yang error
+                ]);
             }
 
-            $check->update($request->all()); 
-            return response()->json([
-                'status' => true,
-                'message' => 'Data berhasil diupdate'
-            ]);
-        } else{
-            return response()->json([ 
-                'status' => false,
-                'message' => 'Data tidak ditemukan'
-            ]);
+            $check = UserModel::find($id);
+            if ($check) {
+                if (!$request->filled('password')) { // jika password tidak diisi, maka hapus dari request
+                    $request->request->remove('password');
+                }
+
+                $check->update($request->all());
+                return response()->json([
+                    'status' => true,
+                    'message' => 'Data berhasil diupdate'
+                ]);
+            } else {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Data tidak ditemukan'
+                ]);
+            }
         }
-    }
-    return redirect('/');
+        return redirect('/');
     }
 
     public function confirm_ajax(string $id)
@@ -311,65 +317,115 @@ class UserController extends Controller
     }
 
     public function import()
-{
-    return view('user.import');
-}
+    {
+        return view('user.import');
+    }
 
-public function import_ajax(Request $request)
-{
-    $request->validate([
-        'file_user' => 'required|mimes:xlsx|max:1024'
-    ]);
+    public function import_ajax(Request $request)
+    {
+        $request->validate([
+            'file_user' => 'required|mimes:xlsx|max:1024'
+        ]);
 
-    $file = $request->file('file_user');
-    $reader = \PhpOffice\PhpSpreadsheet\IOFactory::createReader('Xlsx');
-    $reader->setReadDataOnly(true);
-    $spreadsheet = $reader->load($file->getRealPath());
-    $sheet = $spreadsheet->getActiveSheet();
-    $data = $sheet->toArray(null, false, true, true); // Kolom huruf: A, B, C, D
+        $file = $request->file('file_user');
+        $reader = \PhpOffice\PhpSpreadsheet\IOFactory::createReader('Xlsx');
+        $reader->setReadDataOnly(true);
+        $spreadsheet = $reader->load($file->getRealPath());
+        $sheet = $spreadsheet->getActiveSheet();
+        $data = $sheet->toArray(null, false, true, true); // Kolom huruf: A, B, C, D
 
-    $insert = [];
+        $insert = [];
 
-    foreach ($data as $i => $row) {
-        if ($i == 1) continue; // Skip baris header
+        foreach ($data as $i => $row) {
+            if ($i == 1) continue; // Skip baris header
 
-        $username = trim($row['A'] ?? '');
-        $nama     = trim($row['B'] ?? '');
-        $password = trim($row['C'] ?? '');
-        $level_id = trim($row['D'] ?? '');
+            $username = trim($row['A'] ?? '');
+            $nama     = trim($row['B'] ?? '');
+            $password = trim($row['C'] ?? '');
+            $level_id = trim($row['D'] ?? '');
 
-        if ($username !== '' && $nama !== '' && $password !== '' && is_numeric($level_id)) {
-            $exists = \App\Models\UserModel::where('username', $username)->exists();
-            $levelValid = \App\Models\LevelModel::where('level_id', $level_id)->exists();
+            if ($username !== '' && $nama !== '' && $password !== '' && is_numeric($level_id)) {
+                $exists = \App\Models\UserModel::where('username', $username)->exists();
+                $levelValid = \App\Models\LevelModel::where('level_id', $level_id)->exists();
 
-            if (!$exists && $levelValid) {
-                $insert[] = [
-                    'username'   => $username,
-                    'nama'       => $nama,
-                    'password'   => bcrypt($password),
-                    'level_id'   => $level_id,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ];
+                if (!$exists && $levelValid) {
+                    $insert[] = [
+                        'username'   => $username,
+                        'nama'       => $nama,
+                        'password'   => bcrypt($password),
+                        'level_id'   => $level_id,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ];
+                }
             }
+        }
+
+        if (count($insert) > 0) {
+            \App\Models\UserModel::insertOrIgnore($insert);
+
+            return response()->json([
+                'status' => true,
+                'message' => count($insert) . ' data user berhasil diimport.'
+            ]);
+        } else {
+            return response()->json([
+                'status' => false,
+                'message' => 'Tidak ada data baru yang diimport.'
+            ]);
         }
     }
 
-    if (count($insert) > 0) {
-        \App\Models\UserModel::insertOrIgnore($insert);
+    public function export_excel()
+    {
+        // Ambil data user beserta relasi level
+        $users = \App\Models\UserModel::with('level')
+            ->select('username', 'nama', 'level_id')
+            ->orderBy('level_id')
+            ->get();
 
-        return response()->json([
-            'status' => true,
-            'message' => count($insert) . ' data user berhasil diimport.'
-        ]);
-    } else {
-        return response()->json([
-            'status' => false,
-            'message' => 'Tidak ada data baru yang diimport.'
-        ]);
+        // Buat spreadsheet baru
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Data User');
+
+        // Header kolom
+        $sheet->setCellValue('A1', 'No');
+        $sheet->setCellValue('B1', 'Username');
+        $sheet->setCellValue('C1', 'Nama');
+        $sheet->setCellValue('D1', 'Level');
+        $sheet->getStyle('A1:D1')->getFont()->setBold(true);
+
+        // Isi data dari baris ke-2
+        $no = 1;
+        $baris = 2;
+        foreach ($users as $user) {
+            $sheet->setCellValue('A' . $baris, $no++);
+            $sheet->setCellValue('B' . $baris, $user->username);
+            $sheet->setCellValue('C' . $baris, $user->nama);
+            $sheet->setCellValue('D' . $baris, $user->level->level_nama ?? '-');
+            $baris++;
+        }
+
+        // Atur lebar kolom otomatis
+        foreach (range('A', 'D') as $columnID) {
+            $sheet->getColumnDimension($columnID)->setAutoSize(true);
+        }
+
+        // Output Excel ke browser
+        $writer = IOFactory::createWriter($spreadsheet, 'Xlsx');
+        $filename = 'Data_User_' . date('Ymd_His') . '.xlsx';
+
+        // Header response
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        header('Cache-Control: max-age=0');
+        header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
+        header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT');
+        header('Cache-Control: cache, must-revalidate');
+        header('Pragma: public');
+
+        $writer->save('php://output');
+        exit;
     }
-}
-
-
-    
 }

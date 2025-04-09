@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\Validator;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
 
 class SupplierController extends Controller
 {
@@ -268,14 +269,14 @@ class SupplierController extends Controller
     {
         return view('supplier.import'); // tampilkan modal form
     }
-    
+
     public function import_ajax(Request $request)
     {
         // Validasi file upload
         $request->validate([
             'file_supplier' => 'required|mimes:xlsx|max:1024'
         ]);
-    
+
         // Baca file Excel
         $file = $request->file('file_supplier');
         $reader = IOFactory::createReader('Xlsx');
@@ -283,18 +284,18 @@ class SupplierController extends Controller
         $spreadsheet = $reader->load($file->getRealPath());
         $sheet = $spreadsheet->getActiveSheet();
         $data = $sheet->toArray(null, false, true, true); // mode A, B, ...
-    
+
         $insert = [];
-    
+
         foreach ($data as $i => $row) {
             if ($i == 1) continue; // Lewati header
-    
+
             $nama   = trim($row['A'] ?? '');
             $alamat = trim($row['B'] ?? '');
-    
+
             if ($nama !== '') {
                 $exists = Supplier::where('supplier_nama', $nama)->exists();
-    
+
                 if (!$exists) {
                     $insert[] = [
                         'supplier_nama'   => $nama,
@@ -305,7 +306,7 @@ class SupplierController extends Controller
                 }
             }
         }
-    
+
         // Simpan ke DB
         if (count($insert) > 0) {
             Supplier::insertOrIgnore($insert);
@@ -314,10 +315,61 @@ class SupplierController extends Controller
                 'message' => 'Data supplier berhasil diimport.'
             ]);
         }
-    
+
         return response()->json([
             'status' => false,
             'message' => 'Tidak ada data baru yang diimport.'
         ]);
+    }
+
+    public function export_excel()
+    {
+        // Ambil semua data supplier
+        $suppliers = \App\Models\Supplier::select('supplier_nama', 'supplier_alamat')
+            ->orderBy('supplier_nama')
+            ->get();
+
+        // Buat spreadsheet baru
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Data Supplier');
+
+        // Header kolom
+        $sheet->setCellValue('A1', 'No');
+        $sheet->setCellValue('B1', 'Nama Supplier');
+        $sheet->setCellValue('C1', 'Alamat Supplier');
+        $sheet->getStyle('A1:C1')->getFont()->setBold(true);
+
+        // Isi data dari baris ke-2
+        $no = 1;
+        $baris = 2;
+        foreach ($suppliers as $item) {
+            $sheet->setCellValue('A' . $baris, $no++);
+            $sheet->setCellValue('B' . $baris, $item->supplier_nama);
+            $sheet->setCellValue('C' . $baris, $item->supplier_alamat ?? '-');
+            $baris++;
+        }
+
+        // Atur lebar kolom otomatis
+        foreach (range('A', 'C') as $columnID) {
+            $sheet->getColumnDimension($columnID)->setAutoSize(true);
+        }
+
+        // Siapkan writer dan nama file
+        $writer = IOFactory::createWriter($spreadsheet, 'Xlsx');
+        $filename = 'Data_Supplier_' . date('Ymd_His') . '.xlsx';
+
+        // Header response
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        header('Cache-Control: max-age=0');
+        header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
+        header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT');
+        header('Cache-Control: cache, must-revalidate');
+        header('Pragma: public');
+
+        // Output file ke browser
+        $writer->save('php://output');
+        exit;
     }
 }
