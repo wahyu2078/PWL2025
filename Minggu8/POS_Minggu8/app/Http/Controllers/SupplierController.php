@@ -6,6 +6,7 @@ use App\Models\Supplier;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\Validator;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class SupplierController extends Controller
 {
@@ -16,19 +17,19 @@ class SupplierController extends Controller
             'title' => 'Daftar Supplier',
             'list'  => ['Home', 'Supplier']
         ];
-    
+
         $page = (object) [
             'title' => 'Daftar supplier yang terdaftar dalam sistem'
         ];
-    
+
         $activeMenu = 'supplier';
-    
+
         //  Ambil data supplier unik buat filter
         $suppliers = \App\Models\Supplier::select('supplier_nama')->distinct()->get();
-    
+
         return view('supplier.index', compact('breadcrumb', 'page', 'activeMenu', 'suppliers'));
     }
-    
+
 
     //  Ambil data supplier untuk DataTables
     public function list(Request $request)
@@ -46,17 +47,17 @@ class SupplierController extends Controller
                 //     . csrf_field() . method_field('DELETE') .
                 //     '<button type="submit" class="btn btn-danger btn-sm" onclick="return confirm(\'Apakah Anda yakin menghapus data ini?\');">Hapus</button></form>';
                 $btn = '<button onclick="modalAction(\'' . url('/supplier/' . $supplier->supplier_id .
-                '/show_ajax') . '\')" class="btn btn-info btn-sm">Detail</button> ';
+                    '/show_ajax') . '\')" class="btn btn-info btn-sm">Detail</button> ';
                 $btn .= '<button onclick="modalAction(\'' . url('/supplier/' . $supplier->supplier_id .
-                '/edit_ajax') . '\')" class="btn btn-warning btn-sm">Edit</button> ';
+                    '/edit_ajax') . '\')" class="btn btn-warning btn-sm">Edit</button> ';
                 $btn .= '<button onclick="modalAction(\'' . url('/supplier/' . $supplier->supplier_id .
-                '/delete_ajax') . '\')" class="btn btn-danger btn-sm">Hapus</button> ';
+                    '/delete_ajax') . '\')" class="btn btn-danger btn-sm">Hapus</button> ';
                 return $btn;
             })
             ->rawColumns(['aksi']) // memberitahu bahwa kolom aksi adalah html
             ->make(true);
     }
-    
+
 
     //  Halaman form tambah supplier
     public function create()
@@ -263,4 +264,60 @@ class SupplierController extends Controller
         return redirect('/');
     }
 
+    public function import()
+    {
+        return view('supplier.import'); // tampilkan modal form
+    }
+    
+    public function import_ajax(Request $request)
+    {
+        // Validasi file upload
+        $request->validate([
+            'file_supplier' => 'required|mimes:xlsx|max:1024'
+        ]);
+    
+        // Baca file Excel
+        $file = $request->file('file_supplier');
+        $reader = IOFactory::createReader('Xlsx');
+        $reader->setReadDataOnly(true);
+        $spreadsheet = $reader->load($file->getRealPath());
+        $sheet = $spreadsheet->getActiveSheet();
+        $data = $sheet->toArray(null, false, true, true); // mode A, B, ...
+    
+        $insert = [];
+    
+        foreach ($data as $i => $row) {
+            if ($i == 1) continue; // Lewati header
+    
+            $nama   = trim($row['A'] ?? '');
+            $alamat = trim($row['B'] ?? '');
+    
+            if ($nama !== '') {
+                $exists = Supplier::where('supplier_nama', $nama)->exists();
+    
+                if (!$exists) {
+                    $insert[] = [
+                        'supplier_nama'   => $nama,
+                        'supplier_alamat' => $alamat,
+                        'created_at'      => now(),
+                        'updated_at'      => now(),
+                    ];
+                }
+            }
+        }
+    
+        // Simpan ke DB
+        if (count($insert) > 0) {
+            Supplier::insertOrIgnore($insert);
+            return response()->json([
+                'status' => true,
+                'message' => 'Data supplier berhasil diimport.'
+            ]);
+        }
+    
+        return response()->json([
+            'status' => false,
+            'message' => 'Tidak ada data baru yang diimport.'
+        ]);
+    }
 }

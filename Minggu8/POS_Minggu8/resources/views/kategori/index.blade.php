@@ -7,6 +7,7 @@
         <div class="card-tools">
             <a class="btn btn-sm btn-primary mt-1" href="{{ url('kategori/create') }}">Tambah</a>
             <button class="btn btn-sm btn-success mt-1" data-url="{{ url('/kategori/create_ajax') }}" onclick="modalAction(this.getAttribute('data-url'))">Tambah Ajax</button>
+            <button class="btn btn-sm btn-info mt-1" data-url="{{ url('/kategori/import') }}" onclick="modalAction(this.getAttribute('data-url'))">Import</button>
         </div>
     </div>
     <div class="card-body">

@@ -6,6 +6,7 @@ use App\Models\LevelModel;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\Validator;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class LevelController extends Controller
 {
@@ -220,4 +221,47 @@ class LevelController extends Controller
         }
         return redirect('/');
     }
+
+    public function import()
+{
+    return view('level.import');
+}
+
+public function import_ajax(Request $request)
+{
+    $request->validate([
+        'file_level' => 'required|mimes:xlsx|max:1024'
+    ]);
+
+    $file = $request->file('file_level');
+    $reader = IOFactory::createReader('Xlsx');
+    $reader->setReadDataOnly(true);
+    $spreadsheet = $reader->load($file->getRealPath());
+    $sheet = $spreadsheet->getActiveSheet();
+    $data = $sheet->toArray(null, false, true, true);
+
+    $insert = [];
+
+    foreach ($data as $i => $row) {
+        if ($i == 1) continue; // Skip header
+        if (!empty($row['A']) && !empty($row['B'])) {
+            $exists = \App\Models\LevelModel::where('level_kode', $row['A'])->exists();
+            if (!$exists) {
+                $insert[] = [
+                    'level_kode' => $row['A'],
+                    'level_nama' => $row['B'],
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
+            }
+        }
+    }
+
+    if (count($insert) > 0) {
+        \App\Models\LevelModel::insertOrIgnore($insert);
+        return response()->json(['status' => true, 'message' => 'Data level berhasil diimport']);
+    } else {
+        return response()->json(['status' => false, 'message' => 'Tidak ada data baru yang diimport']);
+    }
+}
 }

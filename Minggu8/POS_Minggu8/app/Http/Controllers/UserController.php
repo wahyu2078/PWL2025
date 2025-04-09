@@ -7,6 +7,7 @@ use App\Models\UserModel;
 use App\Models\LevelModel;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\Validator;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class UserController extends Controller
 {
@@ -308,5 +309,67 @@ class UserController extends Controller
 
         return redirect('/');
     }
+
+    public function import()
+{
+    return view('user.import');
+}
+
+public function import_ajax(Request $request)
+{
+    $request->validate([
+        'file_user' => 'required|mimes:xlsx|max:1024'
+    ]);
+
+    $file = $request->file('file_user');
+    $reader = \PhpOffice\PhpSpreadsheet\IOFactory::createReader('Xlsx');
+    $reader->setReadDataOnly(true);
+    $spreadsheet = $reader->load($file->getRealPath());
+    $sheet = $spreadsheet->getActiveSheet();
+    $data = $sheet->toArray(null, false, true, true); // Kolom huruf: A, B, C, D
+
+    $insert = [];
+
+    foreach ($data as $i => $row) {
+        if ($i == 1) continue; // Skip baris header
+
+        $username = trim($row['A'] ?? '');
+        $nama     = trim($row['B'] ?? '');
+        $password = trim($row['C'] ?? '');
+        $level_id = trim($row['D'] ?? '');
+
+        if ($username !== '' && $nama !== '' && $password !== '' && is_numeric($level_id)) {
+            $exists = \App\Models\UserModel::where('username', $username)->exists();
+            $levelValid = \App\Models\LevelModel::where('level_id', $level_id)->exists();
+
+            if (!$exists && $levelValid) {
+                $insert[] = [
+                    'username'   => $username,
+                    'nama'       => $nama,
+                    'password'   => bcrypt($password),
+                    'level_id'   => $level_id,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
+            }
+        }
+    }
+
+    if (count($insert) > 0) {
+        \App\Models\UserModel::insertOrIgnore($insert);
+
+        return response()->json([
+            'status' => true,
+            'message' => count($insert) . ' data user berhasil diimport.'
+        ]);
+    } else {
+        return response()->json([
+            'status' => false,
+            'message' => 'Tidak ada data baru yang diimport.'
+        ]);
+    }
+}
+
+
     
 }

@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
 use App\Models\Kategori;
 use Illuminate\Support\Facades\Validator;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class KategoriController extends Controller
 {
@@ -16,20 +17,20 @@ class KategoriController extends Controller
             'title' => 'Daftar Kategori',
             'list'  => ['Home', 'Kategori']
         ];
-    
+
         $page = (object) [
             'title' => 'Daftar kategori yang terdaftar dalam sistem'
         ];
-    
+
         $activeMenu = 'kategori';
-    
+
         //  Ambil daftar kode kategori buat dropdown filter
         $kategori = \App\Models\Kategori::select('kategori_kode')->distinct()->get();
-    
+
         //  Kirim data kategori ke view
         return view('kategori.index', compact('breadcrumb', 'page', 'activeMenu', 'kategori'));
     }
-    
+
 
     // Menampilkan data kategori ke DataTables
     public function list(Request $request)
@@ -47,11 +48,11 @@ class KategoriController extends Controller
                 //     . csrf_field() . method_field('DELETE') .
                 //     '<button type="submit" class="btn btn-danger btn-sm" onclick="return confirm(\'Apakah Anda yakin menghapus data ini?\');">Hapus</button></form>';
                 $btn = '<button onclick="modalAction(\'' . url('/kategori/' . $kategori->kategori_id .
-                     '/show_ajax') . '\')" class="btn btn-info btn-sm">Detail</button> ';
-                 $btn .= '<button onclick="modalAction(\'' . url('/kategori/' . $kategori->kategori_id .
-                     '/edit_ajax') . '\')" class="btn btn-warning btn-sm">Edit</button> ';
-                 $btn .= '<button onclick="modalAction(\'' . url('/kategori/' . $kategori->kategori_id .
-                     '/delete_ajax') . '\')" class="btn btn-danger btn-sm">Hapus</button> ';
+                    '/show_ajax') . '\')" class="btn btn-info btn-sm">Detail</button> ';
+                $btn .= '<button onclick="modalAction(\'' . url('/kategori/' . $kategori->kategori_id .
+                    '/edit_ajax') . '\')" class="btn btn-warning btn-sm">Edit</button> ';
+                $btn .= '<button onclick="modalAction(\'' . url('/kategori/' . $kategori->kategori_id .
+                    '/delete_ajax') . '\')" class="btn btn-danger btn-sm">Hapus</button> ';
                 return $btn;
             })
             ->rawColumns(['aksi']) // memberitahu bahwa kolom aksi adalah html
@@ -93,40 +94,40 @@ class KategoriController extends Controller
     public function show($id)
     {
         $kategori = Kategori::findOrFail($id);
-    
+
         $breadcrumb = (object) [
             'title' => 'Detail Kategori',
             'list'  => ['Home', 'Kategori', 'Detail']
         ];
-    
+
         // 🔥 Tambahin $page biar nggak error di view
         $page = (object) [
             'title' => 'Detail Kategori'
         ];
-    
+
         $activeMenu = 'kategori';
-    
+
         return view('kategori.show', compact('breadcrumb', 'page', 'kategori', 'activeMenu'));
     }
-    
+
 
     // Halaman form edit kategori
     public function edit($id)
     {
         $kategori = Kategori::findOrFail($id);
-    
+
         $breadcrumb = (object) [
             'title' => 'Edit Kategori',
             'list'  => ['Home', 'Kategori', 'Edit']
         ];
-    
+
         // 🛠️ Ini yang kurang! Tambahin $page biar nggak error
         $page = (object) [
             'title' => 'Edit kategori'
         ];
-    
+
         $activeMenu = 'kategori';
-    
+
         return view('kategori.edit', compact('breadcrumb', 'page', 'kategori', 'activeMenu'));
     }
 
@@ -251,5 +252,53 @@ class KategoriController extends Controller
         return redirect('/');
     }
 
+    public function import()
+    {
+        return view('kategori.import');
+    }
 
+    public function import_ajax(Request $request)
+    {
+        $request->validate([
+            'file_kategori' => 'required|mimes:xlsx|max:1024'
+        ]);
+
+        $file = $request->file('file_kategori');
+        $reader = IOFactory::createReader('Xlsx');
+        $reader->setReadDataOnly(true);
+        $spreadsheet = $reader->load($file->getRealPath());
+        $sheet = $spreadsheet->getActiveSheet();
+        $data = $sheet->toArray(null, false, true, true); // Kolom: A = kode, B = nama
+
+        $insert = [];
+
+        foreach ($data as $i => $row) {
+            if ($i == 1) continue; // Skip header
+
+            if (!empty($row['A']) && !empty($row['B'])) {
+                $exists = Kategori::where('kategori_kode', $row['A'])->exists();
+                if (!$exists) {
+                    $insert[] = [
+                        'kategori_kode' => $row['A'],
+                        'kategori_nama' => $row['B'],
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ];
+                }
+            }
+        }
+
+        if (count($insert) > 0) {
+            Kategori::insertOrIgnore($insert);
+            return response()->json([
+                'status' => true,
+                'message' => 'Data kategori berhasil diimport'
+            ]);
+        } else {
+            return response()->json([
+                'status' => false,
+                'message' => 'Tidak ada data baru yang diimport'
+            ]);
+        }
+    }
 }
