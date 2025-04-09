@@ -9,6 +9,7 @@ use App\Http\Controllers\KategoriController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\BarangController;
 
+// Validasi bahwa parameter {id} harus berupa angka
 Route::pattern('id', '[0-9]+');
 
 // Halaman Welcome
@@ -32,7 +33,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/list', [UserController::class, 'list']);
         Route::get('/create', [UserController::class, 'create']);
         Route::post('/', [UserController::class, 'store']);
-        
+
         // Ajax
         Route::get('/create_ajax', [UserController::class, 'create_ajax']);
         Route::post('/ajax', [UserController::class, 'store_ajax']);
@@ -50,7 +51,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/list', [KategoriController::class, 'list']);
         Route::get('/create', [KategoriController::class, 'create']);
         Route::post('/', [KategoriController::class, 'store']);
-        
+
         // Ajax
         Route::get('/create_ajax', [KategoriController::class, 'create_ajax']);
         Route::post('/ajax', [KategoriController::class, 'store_ajax']);
@@ -104,7 +105,7 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/{id}', [LevelController::class, 'destroy']);
     });
 
-    // ======= Barang (ADM & MNG) =======
+    // ======= Barang (Hanya untuk ADM & MNG) =======
     Route::middleware(['authorize:ADM,MNG'])->prefix('barang')->group(function () {
         Route::get('/', [BarangController::class, 'index']);
         Route::post('/list', [BarangController::class, 'list']);
@@ -122,5 +123,10 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{id}/delete_ajax', [BarangController::class, 'confirm_ajax']);
         Route::delete('/{id}/delete_ajax', [BarangController::class, 'delete_ajax']);
         Route::delete('/{id}', [BarangController::class, 'destroy']);
+
+        // Import Barang
+        Route::get('/import', [BarangController::class, 'import']); // form import
+        Route::post('/import_ajax', [BarangController::class, 'import_ajax']); // proses import
+        Route::get('/export_excel', [BarangController::class, 'export_excel'])->name('export_excel');
     });
 });

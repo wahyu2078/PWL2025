@@ -7,6 +7,9 @@ use App\Models\Kategori;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\Validator;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use Illuminate\Support\Facades\DB;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
 
 class BarangController extends Controller
 {
@@ -36,7 +39,7 @@ class BarangController extends Controller
         if ($request->kategori_id) {
             $barangs->where('kategori_id', $request->kategori_id);
         }
-            
+
         return DataTables::of($barangs)
             // menambahkan kolom index / no urut (default nama kolom: DT_RowIndex)
             ->addIndexColumn()
@@ -48,11 +51,11 @@ class BarangController extends Controller
                 //     . csrf_field() . method_field('DELETE') .
                 //     '<button type="submit" class="btn btn-danger btn-sm" onclick="return confirm(\'Apakah Anda yakin menghapus data ini?\');">Hapus</button></form>';
                 $btn = '<button onclick="modalAction(\'' . url('/barang/' . $barang->barang_id .
-                '/show_ajax') . '\')" class="btn btn-info btn-sm">Detail</button> ';
+                    '/show_ajax') . '\')" class="btn btn-info btn-sm">Detail</button> ';
                 $btn .= '<button onclick="modalAction(\'' . url('/barang/' . $barang->barang_id .
-                '/edit_ajax') . '\')" class="btn btn-warning btn-sm">Edit</button> ';
-                 $btn .= '<button onclick="modalAction(\'' . url('/barang/' . $barang->barang_id .
-                '/delete_ajax') . '\')" class="btn btn-danger btn-sm">Hapus</button> ';
+                    '/edit_ajax') . '\')" class="btn btn-warning btn-sm">Edit</button> ';
+                $btn .= '<button onclick="modalAction(\'' . url('/barang/' . $barang->barang_id .
+                    '/delete_ajax') . '\')" class="btn btn-danger btn-sm">Hapus</button> ';
                 return $btn;
             })
             ->rawColumns(['aksi']) // memberitahu bahwa kolom aksi adalah html
@@ -164,7 +167,7 @@ class BarangController extends Controller
     public function destroy(string $id)
     {
         $check = Barang::find($id);
-        if (!$check) { 
+        if (!$check) {
             // untuk mengecek apakah data barang dengan id yang dimaksud ada atau tidak
             return redirect('/barang')->with('error', 'Data barang tidak ditemukan');
         }
@@ -222,7 +225,7 @@ class BarangController extends Controller
         $barang = Barang::find($id);
         $kategori = Kategori::select('kategori_id', 'kategori_nama')->get();
 
-        return view('barang.edit_ajax', ['kategori' => $kategori ,'barang' => $barang]);
+        return view('barang.edit_ajax', ['kategori' => $kategori, 'barang' => $barang]);
     }
 
     public function update_ajax(Request $request, string $id)
@@ -291,4 +294,132 @@ class BarangController extends Controller
         return redirect('/');
     }
 
+    public function import()
+    {
+        return view('barang.import');
+    }
+    //Mengimport data barang dari file excel
+    public function import_ajax(Request $request)
+    {
+        // (1) Validasi file upload
+        $rules = [
+            'file_barang' => ['required', 'mimes:xlsx', 'max:1024']
+        ];
+
+        $validator = Validator::make($request->all(), $rules);
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Validasi Gagal',
+                'msgField' => $validator->errors()
+            ]);
+        }
+
+        // (2) Baca file Excel
+        $file = $request->file('file_barang');
+        $reader = IOFactory::createReader('Xlsx');
+        $reader->setReadDataOnly(true);
+        $spreadsheet = $reader->load($file->getRealPath());
+        $sheet = $spreadsheet->getActiveSheet();
+        $data = $sheet->toArray(null, false, true, true);
+
+        // (3) Siapkan array untuk insert
+        $insert = [];
+        if (count($data) > 1) {
+            foreach ($data as $baris => $value) {
+                if ($baris > 1) {
+                    $existing = Barang::where('barang_kode', $value['B'])->exists();
+                    if (!$existing) {
+                        $insert[] = [
+                            'kategori_id' => $value['A'],
+                            'barang_kode' => $value['B'],
+                            'barang_nama' => $value['C'],
+                            'harga_beli'  => $value['D'],
+                            'harga_jual'  => $value['E'],
+                            'created_at'  => now(),
+                            'updated_at'  => now(),
+                        ];
+                    }
+                }
+            }
+
+            // (4) Simpan ke database (abaikan duplikat)
+            if (count($insert) > 0) {
+                Barang::insertOrIgnore($insert);
+
+                return response()->json([
+                    'status' => true,
+                    'message' => 'Data berhasil diimport'
+                ]);
+            } else {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Data tidak tersedia untuk diimport'
+                ]);
+            }
+        } else {
+            return response()->json([
+                'status' => false,
+                'message' => 'File kosong atau hanya berisi header'
+            ]);
+        }
+    }
+
+    public function export_excel()
+    {
+        // Ambil data barang dengan relasi kategori
+        $barang = Barang::with('kategori')
+            ->select('kategori_id', 'barang_kode', 'barang_nama', 'harga_beli', 'harga_jual')
+            ->orderBy('kategori_id')
+            ->get();
+
+        // Buat spreadsheet baru
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Data Barang');
+
+        // Header kolom
+        $sheet->setCellValue('A1', 'No');
+        $sheet->setCellValue('B1', 'Kode Barang');
+        $sheet->setCellValue('C1', 'Nama Barang');
+        $sheet->setCellValue('D1', 'Harga Beli');
+        $sheet->setCellValue('E1', 'Harga Jual');
+        $sheet->setCellValue('F1', 'Kategori');
+        $sheet->getStyle('A1:F1')->getFont()->setBold(true);
+
+        // Isi data dari baris ke-2
+        $no = 1;
+        $baris = 2;
+        foreach ($barang as $value) {
+            $sheet->setCellValue('A' . $baris, $no++);
+            $sheet->setCellValue('B' . $baris, $value->barang_kode);
+            $sheet->setCellValue('C' . $baris, $value->barang_nama);
+            $sheet->setCellValue('D' . $baris, $value->harga_beli);
+            $sheet->setCellValue('E' . $baris, $value->harga_jual);
+            $sheet->setCellValue('F' . $baris, $value->kategori->kategori_nama ?? '-');
+            $baris++;
+        }
+
+        // Atur lebar kolom otomatis
+        foreach (range('A', 'F') as $columnID) {
+            $sheet->getColumnDimension($columnID)->setAutoSize(true);
+        }
+
+        // Siapkan response file
+        $writer = IOFactory::createWriter($spreadsheet, 'Xlsx');
+        $filename = 'Data_Barang_' . date('Ymd_His') . '.xlsx';
+
+        // Header response
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        header('Cache-Control: max-age=0');
+        header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
+        header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT');
+        header('Cache-Control: cache, must-revalidate');
+        header('Pragma: public');
+
+        // Output file ke browser
+        $writer->save('php://output');
+        exit;
+    }
 }
