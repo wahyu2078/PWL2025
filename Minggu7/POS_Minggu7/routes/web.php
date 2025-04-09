@@ -44,26 +44,7 @@ Route::group(['prefix' => 'user'], function () {
 
 
 // Rute untuk Level
-Route::group(['prefix' => 'level'], function () {
-    Route::get('/', [LevelController::class, 'index']);
-    Route::post('/list', [LevelController::class, 'list']);
-    Route::get('/create', [LevelController::class, 'create']);
-    Route::post('/', [LevelController::class, 'store']);
-    // Ajax Tambah
-    Route::get('/create_ajax', [LevelController::class, 'create_ajax']);
-    Route::post('/ajax', [LevelController::class, 'store_ajax']);
 
-    Route::get('/{id}', [LevelController::class, 'show']);
-    Route::get('/{id}/edit', [LevelController::class, 'edit']);
-    Route::put('/{id}', [LevelController::class, 'update']);
-    // Ajax Update
-    Route::get('/{id}/edit_ajax', [LevelController::class, 'edit_ajax']);
-    Route::put('/{id}/update_ajax', [LevelController::class, 'update_ajax']);
-    // Ajax Delete
-    Route::get('/{id}/delete_ajax', [LevelController::class, 'confirm_ajax']);
-    Route::delete('/{id}/delete_ajax', [LevelController::class, 'delete_ajax']);
-    Route::delete('/{id}', [LevelController::class, 'destroy']);
-});
 
 Route::group(['prefix' => 'kategori'], function () {
     Route::get('/', [KategoriController::class, 'index']);
@@ -139,12 +120,30 @@ Route::post('login', [AuthController::class, 'postlogin']);
 Route::get('logout', [AuthController::class, 'logout'])->middleware('auth');
 
 // Group route yang hanya bisa diakses setelah login
-Route::middleware(['auth'])->group(function () {
-    
-    // Masukkan semua route yang membutuhkan autentikasi di sini
+Route::middleware(['auth', 'authorize:ADM'])->group(function () {
+    Route::prefix('level')->group(function () {
+        Route::get('/', [LevelController::class, 'index']);
+        Route::post('/list', [LevelController::class, 'list']);
+        Route::get('/create', [LevelController::class, 'create']);
+        Route::post('/', [LevelController::class, 'store']);
 
-    // Contoh:
-    // Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    // Route::resource('/user', UserController::class);
-    
+        // Ajax Tambah
+        Route::get('/create_ajax', [LevelController::class, 'create_ajax']);
+        Route::post('/ajax', [LevelController::class, 'store_ajax']);
+
+        Route::get('/{id}', [LevelController::class, 'show']);
+        Route::get('/{id}/edit', [LevelController::class, 'edit']);
+        Route::put('/{id}', [LevelController::class, 'update']);
+
+        // Ajax Update
+        Route::get('/{id}/edit_ajax', [LevelController::class, 'edit_ajax']);
+        Route::put('/{id}/update_ajax', [LevelController::class, 'update_ajax']);
+
+        // Ajax Delete
+        Route::get('/{id}/delete_ajax', [LevelController::class, 'confirm_ajax']);
+        Route::delete('/{id}/delete_ajax', [LevelController::class, 'delete_ajax']);
+
+        // Non-Ajax Delete
+        Route::delete('/{id}', [LevelController::class, 'destroy']);
+    });
 });
