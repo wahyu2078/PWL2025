@@ -8,6 +8,7 @@
             <a href="{{ url('/barang/export_excel') }}" class="btn btn-sm btn-primary mt-1">
                 <i class="fa fa-file-excel-o"></i> Export Barang
             </a>
+            <a href="{{ url('/barang/export_pdf') }}" class="btn btn-warning"><i class="fa fa-file- pdf"></i> Export Barang PDF</a>
             <button class="btn btn-sm btn-info mt-1" data-url="{{ url('/barang/import') }}" onclick="modalAction(this.getAttribute('data-url'))">
                 Import Barang
             </button>
