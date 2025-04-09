@@ -158,5 +158,6 @@ Route::middleware(['auth'])->group(function () {
     });
 });
 
+// profile
 Route::get('/profile', [UserController::class, 'profile'])->middleware('auth');
 Route::post('/profile', [UserController::class, 'updateProfile'])->middleware('auth');

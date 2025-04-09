@@ -17,7 +17,7 @@
             </div>
 
             <div class="form-group">
-                <label>Foto Profil</label><br>
+                <label>Foto Profile</label><br>
                 <img src="{{ $user->foto ? asset('uploads/user/' . $user->foto) : asset('images/default.png') }}" width="100" class="rounded mb-2">
                 <input type="file" name="foto" class="form-control-file">
                 @error('foto') <small class="text-danger">{{ $message }}</small> @enderror

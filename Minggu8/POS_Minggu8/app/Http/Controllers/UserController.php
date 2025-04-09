@@ -529,7 +529,7 @@ class UserController extends Controller
         // Update nama
         $user->nama = $request->nama;
 
-        // Cek dan upload file foto jika ada
+        // Cek & upload file foto jika ada
         if ($request->hasFile('foto')) {
             $foto = $request->file('foto');
             $filename = 'user_' . time() . '.' . $foto->getClientOriginalExtension();

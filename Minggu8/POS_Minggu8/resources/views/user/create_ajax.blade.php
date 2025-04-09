@@ -50,6 +50,8 @@
     </div>
 </form>
 
+<<!--ajax-->>
+
 <script>
     $(document).ready(function () {
         $("#form-tambah").on("submit", function (e) {

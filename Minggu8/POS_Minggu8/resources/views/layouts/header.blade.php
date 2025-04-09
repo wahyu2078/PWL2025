@@ -16,7 +16,7 @@
 
     <!-- Right navbar links -->
     <ul class="navbar-nav ml-auto">
-        <!-- Info Login -->
+        <!-- Login -->
         @auth
         <li class="nav-item d-flex align-items-center">
             @php

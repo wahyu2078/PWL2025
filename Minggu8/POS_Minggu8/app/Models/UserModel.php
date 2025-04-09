@@ -52,7 +52,7 @@ class UserModel extends Authenticatable
     }
 
     /**
-     * Mendapatkan kode role user
+     * Mendapatkan kode role 
      */
     public function getRole(): string
     {

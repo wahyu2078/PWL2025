@@ -15,7 +15,7 @@
     </div>
 </div>
 @else
-<!-- Form Edit -->
+<!-- Edit -->
 <form action="{{ url('/user/' . $user->user_id . '/update_ajax') }}" method="POST" id="form-edit" enctype="multipart/form-data">
     @csrf
     @method('PUT')
