@@ -34,59 +34,27 @@
 </form>
 
 <script>
-    $(document).ready(function () {
-        $("#form-import").validate({
-            rules: {
-                file_barang: {
-                    required: true,
-                    extension: "xlsx"
+    $("#form-import").on("submit", function(e) {
+        e.preventDefault();
+        let form = this;
+        let formData = new FormData(form);
+
+        $.ajax({
+            url: form.action,
+            method: form.method,
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (res) {
+                if (res.status) {
+                    $('#myModal').modal('hide');
+                    Swal.fire('Berhasil', res.message, 'success');
+                    tableBarang.ajax.reload(); // reload datatable barang
+                } else {
+                    Swal.fire('Gagal', res.message, 'error');
                 }
-            },
-            submitHandler: function (form) {
-                const formData = new FormData(form);
-
-                $.ajax({
-                    url: form.action,
-                    type: form.method,
-                    data: formData,
-                    processData: false,
-                    contentType: false,
-                    success: function (response) {
-                        if (response.status) {
-                            $('#myModal').modal('hide');
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Berhasil',
-                                text: response.message
-                            });
-                            tableBarang.ajax.reload(); // reload datatable
-                        } else {
-                            $('.error-text').text('');
-                            $.each(response.msgField, function (prefix, val) {
-                                $('#error-' + prefix).text(val[0]);
-                            });
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Terjadi Kesalahan',
-                                text: response.message
-                            });
-                        }
-                    }
-                });
-
-                return false;
-            },
-            errorElement: 'span',
-            errorPlacement: function (error, element) {
-                error.addClass('invalid-feedback');
-                element.closest('.form-group').append(error);
-            },
-            highlight: function (element) {
-                $(element).addClass('is-invalid');
-            },
-            unhighlight: function (element) {
-                $(element).removeClass('is-invalid');
             }
         });
     });
 </script>
+

@@ -303,18 +303,18 @@ class BarangController extends Controller
     public function import_ajax(Request $request)
     {
         // (1) Validasi file upload
-        $rules = [
-            'file_barang' => ['required', 'mimes:xlsx', 'max:1024']
-        ];
+        $request->validate([
+            'file_barang' => 'required|mimes:xlsx|max:1024'
+        ]);
 
-        $validator = Validator::make($request->all(), $rules);
-        if ($validator->fails()) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Validasi Gagal',
-                'msgField' => $validator->errors()
-            ]);
-        }
+        // $validator = Validator::make($request->all(), $rules);
+        // if ($validator->fails()) {
+        //     return response()->json([
+        //         'status' => false,
+        //         'message' => 'Validasi Gagal',
+        //         'msgField' => $validator->errors()
+        //     ]);
+        // }
 
         // (2) Baca file Excel
         $file = $request->file('file_barang');
@@ -346,25 +346,12 @@ class BarangController extends Controller
 
             // (4) Simpan ke database (abaikan duplikat)
             if (count($insert) > 0) {
-                Barang::insertOrIgnore($insert);
-
-                return response()->json([
-                    'status' => true,
-                    'message' => 'Data berhasil diimport'
-                ]);
+                \App\Models\Barang::insertOrIgnore($insert);
+                return response()->json(['status' => true, 'message' => 'Data level berhasil diimport']);
             } else {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Data tidak tersedia untuk diimport'
-                ]);
+                return response()->json(['status' => false, 'message' => 'Tidak ada data baru yang diimport']);
             }
-        } else {
-            return response()->json([
-                'status' => false,
-                'message' => 'File kosong atau hanya berisi header'
-            ]);
-        }
-    }
+        }}
 
     public function export_excel()
     {

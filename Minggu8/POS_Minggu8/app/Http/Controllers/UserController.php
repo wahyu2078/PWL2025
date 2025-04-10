@@ -420,16 +420,9 @@ class UserController extends Controller
 
         if (count($insert) > 0) {
             \App\Models\UserModel::insertOrIgnore($insert);
-
-            return response()->json([
-                'status' => true,
-                'message' => count($insert) . ' data user berhasil diimport.'
-            ]);
+            return response()->json(['status' => true, 'message' => 'Data level berhasil diimport']);
         } else {
-            return response()->json([
-                'status' => false,
-                'message' => 'Tidak ada data baru yang diimport.'
-            ]);
+            return response()->json(['status' => false, 'message' => 'Tidak ada data baru yang diimport']);
         }
     }
 
