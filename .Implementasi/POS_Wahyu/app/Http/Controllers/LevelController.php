@@ -35,18 +35,22 @@ class LevelController extends Controller
     {
         $levels = Level::select('level_id', 'level_kode', 'level_nama');
 
+        // Filter berdasarkan level_kode (jika dikirim)
+        if ($request->filter_level) {
+            $levels->where('level_kode', $request->filter_level);
+        }
+
         return DataTables::of($levels)
             ->addIndexColumn()
             ->addColumn('aksi', function ($level) {
                 $btn = '<button onclick="modalAction(\'' . url('/level/' . $level->level_id . '/show_ajax') . '\')" class="btn btn-info btn-sm">Detail</button> ';
                 $btn .= '<button onclick="modalAction(\'' . url('/level/' . $level->level_id . '/edit_ajax') . '\')" class="btn btn-warning btn-sm">Edit</button> ';
-                $btn .= '<button onclick="modalAction(\'' . url('/level/' . $level->level_id . '/delete_ajax') . '\')" class="btn btn-danger btn-sm">Hapus</button> ';
+                $btn .= '<button onclick="modalAction(\'' . url('/level/' . $level->level_id . '/delete_ajax') . '\')" class="btn btn-danger btn-sm btn-delete-level">Hapus</button>';
                 return $btn;
             })
             ->rawColumns(['aksi'])
             ->make(true);
     }
-
 
     public function create_ajax()
     {
@@ -69,6 +73,13 @@ class LevelController extends Controller
         }
         return redirect('/');
     }
+
+    public function show_ajax($id)
+    {
+        $level = Level::find($id);
+        return view('level.show_ajax', compact('level'));
+    }
+
 
     public function edit_ajax(string $id)
     {
