@@ -1,5 +1,5 @@
-@if (!$level)
-    <div class="modal-dialog modal-md" role="document">
+@if (!$kategori)
+    <div class="modal-dialog modal-md" role="document" id="modal-master">
         <div class="modal-content">
             <div class="modal-header bg-danger">
                 <h5 class="modal-title">Kesalahan</h5>
@@ -9,29 +9,29 @@
             </div>
             <div class="modal-body text-center">
                 <div class="alert alert-danger mb-0">
-                    <i class="fas fa-exclamation-triangle"></i> Data level tidak ditemukan.
+                    <i class="fas fa-exclamation-triangle"></i> Data kategori tidak ditemukan.
                 </div>
             </div>
         </div>
     </div>
 @else
-    <div class="modal-dialog modal-md" role="document">
+    <div class="modal-dialog modal-md" role="document" id="modal-master">
         <div class="modal-content">
             <div class="modal-header bg-info">
-                <h5 class="modal-title">Detail Level</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Tutup">
+                <h5 class="modal-title">Detail Data Kategori</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body">
                 <table class="table table-bordered">
                     <tr>
-                        <th>Kode</th>
-                        <td>{{ $level->level_kode }}</td>
+                        <th style="width: 30%;">Kode Kategori</th>
+                        <td>{{ $kategori->kategori_kode }}</td>
                     </tr>
                     <tr>
-                        <th>Nama</th>
-                        <td>{{ $level->level_nama }}</td>
+                        <th>Nama Kategori</th>
+                        <td>{{ $kategori->kategori_nama }}</td>
                     </tr>
                 </table>
             </div>

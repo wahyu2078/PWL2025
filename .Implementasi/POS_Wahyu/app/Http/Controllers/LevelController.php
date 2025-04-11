@@ -34,23 +34,28 @@ class LevelController extends Controller
     public function list(Request $request)
     {
         $levels = Level::select('level_id', 'level_kode', 'level_nama');
-
-        // Filter berdasarkan level_kode (jika dikirim)
+    
         if ($request->filter_level) {
             $levels->where('level_kode', $request->filter_level);
         }
-
+    
         return DataTables::of($levels)
             ->addIndexColumn()
             ->addColumn('aksi', function ($level) {
-                $btn = '<button onclick="modalAction(\'' . url('/level/' . $level->level_id . '/show_ajax') . '\')" class="btn btn-info btn-sm">Detail</button> ';
-                $btn .= '<button onclick="modalAction(\'' . url('/level/' . $level->level_id . '/edit_ajax') . '\')" class="btn btn-warning btn-sm">Edit</button> ';
-                $btn .= '<button onclick="modalAction(\'' . url('/level/' . $level->level_id . '/delete_ajax') . '\')" class="btn btn-danger btn-sm btn-delete-level">Hapus</button>';
+                $showUrl   = url('/level/' . $level->level_id . '/show_ajax');
+                $editUrl   = url('/level/' . $level->level_id . '/edit_ajax');
+                $deleteUrl = url('/level/' . $level->level_id . '/delete_ajax');
+    
+                $btn  = '<button onclick="modalAction(\'' . $showUrl . '\')" class="btn btn-info btn-sm">Detail</button> ';
+                $btn .= '<button onclick="modalAction(\'' . $editUrl . '\')" class="btn btn-warning btn-sm">Edit</button> ';
+                $btn .= '<button class="btn btn-danger btn-sm btn-delete-level" data-url="' . $deleteUrl . '">Hapus</button>';
+    
                 return $btn;
             })
-            ->rawColumns(['aksi'])
+            ->rawColumns(['aksi']) // penting agar tombol ditampilkan sebagai HTML
             ->make(true);
     }
+    
 
     public function create_ajax()
     {

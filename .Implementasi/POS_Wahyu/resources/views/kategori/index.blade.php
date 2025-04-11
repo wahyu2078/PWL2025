@@ -6,8 +6,8 @@
         <h3 class="card-title">{{ $page->title }}</h3>
         <div class="card-tools">
             <button class="btn btn-sm btn-success mt-1"
-                data-url="{{ url('/level/create_ajax') }}"
-                onclick="modalAction(this.getAttribute('data-url'))">
+                    data-url="{{ url('/kategori/create_ajax') }}"
+                    onclick="modalAction(this.getAttribute('data-url'))">
                 Tambah Ajax
             </button>
         </div>
@@ -21,27 +21,27 @@
             <div class="alert alert-danger">{{ session('error') }}</div>
         @endif
 
-        <!-- Filter -->
+        <!-- Filter Dropdown -->
         <div class="row mb-3">
             <div class="col-md-4">
-                <label for="filter_level_kode">Filter Kode Level:</label>
-                <select class="form-control" id="filter_level_kode">
+                <label for="filter_kode_kategori">Filter Kode Kategori:</label>
+                <select class="form-control" id="filter_kode_kategori">
                     <option value="">- Semua -</option>
-                    @foreach ($level_kode as $item)
-                        <option value="{{ $item->level_kode }}">{{ $item->level_kode }}</option>
+                    @foreach ($kategori_kode as $item)
+                        <option value="{{ $item->kategori_kode }}">{{ $item->kategori_kode }}</option>
                     @endforeach
                 </select>
-                <small class="form-text text-muted">Tampilkan berdasarkan kode level</small>
+                <small class="form-text text-muted">Filter berdasarkan kode kategori</small>
             </div>
         </div>
 
-        <!-- Tabel -->
-        <table class="table table-bordered table-hover table-sm" id="table_level">
+        <!-- Table Kategori -->
+        <table class="table table-bordered table-hover table-sm" id="table_kategori">
             <thead>
                 <tr>
                     <th>No</th>
-                    <th>Kode Level</th>
-                    <th>Nama Level</th>
+                    <th>Kode Kategori</th>
+                    <th>Nama Kategori</th>
                     <th>Aksi</th>
                 </tr>
             </thead>
@@ -49,7 +49,7 @@
     </div>
 </div>
 
-<!-- Modal untuk Ajax -->
+<!-- Modal Ajax -->
 <div id="myModal" class="modal fade animate shake"
      tabindex="-1" role="dialog"
      data-backdrop="static"
@@ -66,37 +66,37 @@
         });
     }
 
-    let dataLevel;
+    let dataKategori;
 
     $(document).ready(function () {
-        // Inisialisasi datatable
-        dataLevel = $('#table_level').DataTable({
+        // Inisialisasi DataTables
+        dataKategori = $('#table_kategori').DataTable({
             processing: true,
             serverSide: true,
             ajax: {
-                url: "{{ url('level/list') }}",
+                url: "{{ url('kategori/list') }}",
                 type: "POST",
                 dataType: "json",
                 data: function (d) {
                     d._token = "{{ csrf_token() }}";
-                    d.filter_level = $('#filter_level_kode').val();
+                    d.filter_kode = $('#filter_kode_kategori').val();
                 }
             },
             columns: [
                 { data: "DT_RowIndex", className: "text-center", orderable: false, searchable: false },
-                { data: "level_kode" },
-                { data: "level_nama" },
+                { data: "kategori_kode" },
+                { data: "kategori_nama" },
                 { data: "aksi", orderable: false, searchable: false }
             ]
         });
 
-        // Reload tabel saat filter dropdown berubah
-        $('#filter_level_kode').on('change', function () {
-            dataLevel.ajax.reload();
+        // Filter saat select berubah
+        $('#filter_kode_kategori').on('change', function () {
+            dataKategori.ajax.reload();
         });
 
-        // Tombol Hapus: buka confirm_ajax
-        $(document).on('click', '.btn-delete-level', function () {
+        // Button Hapus → arahkan ke confirm_ajax (bukan langsung delete)
+        $(document).on('click', '.btn-delete-kategori', function () {
             const url = $(this).data('url');
             modalAction(url);
         });

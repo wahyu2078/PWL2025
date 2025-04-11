@@ -23,41 +23,33 @@ class KategoriController extends Controller
 
         $activeMenu = 'kategori';
 
-        //  Ambil daftar kode kategori buat dropdown filter
-        $kategori = \App\Models\Kategori::select('kategori_kode')->distinct()->get();
+        // GANTI nama variabel dari $kategori ke $kategori_kode
+        $kategori_kode = \App\Models\Kategori::select('kategori_kode')->distinct()->get();
 
-        //  Kirim data kategori ke view
-        return view('kategori.index', compact('breadcrumb', 'page', 'activeMenu', 'kategori'));
+        return view('kategori.index', compact('breadcrumb', 'page', 'activeMenu', 'kategori_kode'));
     }
-
 
     // Menampilkan data kategori ke DataTables
     public function list(Request $request)
     {
         $kategori = Kategori::select('kategori_id', 'kategori_kode', 'kategori_nama');
 
+        // Filter berdasarkan kode kategori jika disediakan
+        if ($request->filter_kode) {
+            $kategori->where('kategori_kode', $request->filter_kode);
+        }
+
         return DataTables::of($kategori)
-            // menambahkan kolom index / no urut (default nama kolom: DT_RowIndex)
-            ->addIndexColumn()
-            ->addColumn('aksi', function ($kategori) { // menambahkan kolom aksi
-                // $btn = '<a href="' . url('/kategori/' . $kategori->kategori_id) . '" class="btn btn-info btn-sm">Detail</a> ';
-                // $btn .= '<a href="' . url('/kategori/' . $kategori->kategori_id . '/edit') . '" class="btn btn-warning btn-sm">Edit</a> ';
-                // $btn .= '<form class="d-inline-block" method="POST" action="' .
-                //     url('/kategori/' . $kategori->kategori_id) . '">'
-                //     . csrf_field() . method_field('DELETE') .
-                //     '<button type="submit" class="btn btn-danger btn-sm" onclick="return confirm(\'Apakah Anda yakin menghapus data ini?\');">Hapus</button></form>';
-                $btn = '<button onclick="modalAction(\'' . url('/kategori/' . $kategori->kategori_id .
-                    '/show_ajax') . '\')" class="btn btn-info btn-sm">Detail</button> ';
-                $btn .= '<button onclick="modalAction(\'' . url('/kategori/' . $kategori->kategori_id .
-                    '/edit_ajax') . '\')" class="btn btn-warning btn-sm">Edit</button> ';
-                $btn .= '<button onclick="modalAction(\'' . url('/kategori/' . $kategori->kategori_id .
-                    '/delete_ajax') . '\')" class="btn btn-danger btn-sm">Hapus</button> ';
+            ->addIndexColumn() // Menambahkan kolom nomor urut (DT_RowIndex)
+            ->addColumn('aksi', function ($kategori) {
+                $btn  = '<button onclick="modalAction(\'' . url('/kategori/' . $kategori->kategori_id . '/show_ajax') . '\')" class="btn btn-info btn-sm">Detail</button> ';
+                $btn .= '<button onclick="modalAction(\'' . url('/kategori/' . $kategori->kategori_id . '/edit_ajax') . '\')" class="btn btn-warning btn-sm">Edit</button> ';
+                $btn .= '<button class="btn btn-danger btn-sm btn-delete-kategori" data-url="' . url('/kategori/' . $kategori->kategori_id . '/delete_ajax') . '">Hapus</button>';
                 return $btn;
             })
-            ->rawColumns(['aksi']) // memberitahu bahwa kolom aksi adalah html
+            ->rawColumns(['aksi']) // Memberitahu DataTables bahwa kolom aksi berisi HTML
             ->make(true);
     }
-
 
     public function create_ajax()
     {
@@ -90,6 +82,12 @@ class KategoriController extends Controller
             ]);
         }
         return redirect('/');
+    }
+
+    public function show_ajax($id)
+    {
+        $kategori = \App\Models\Kategori::find($id);
+        return view('kategori.show_ajax', compact('kategori'));
     }
 
     public function edit_ajax(string $id)
