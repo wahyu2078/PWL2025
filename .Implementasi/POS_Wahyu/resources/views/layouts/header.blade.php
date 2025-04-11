@@ -45,26 +45,27 @@
             </a>
             <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
                 @foreach ([1, 2, 3] as $i)
-                    <a href="#" class="dropdown-item">
-                        <div class="media">
-                            <img src="../../dist/img/user{{ $i }}-128x128.jpg" alt="User Avatar" class="img-size-50 mr-3 img-circle shadow-sm">
-                            <div class="media-body">
-                                <h3 class="dropdown-item-title mb-1">
-                                    User {{ $i }}
-                                    <span class="float-right text-sm text-{{ ['danger','muted','warning'][$i - 1] }}">
-                                        <i class="fas fa-star"></i>
-                                    </span>
-                                </h3>
-                                <p class="text-sm">Pesan dari user {{ $i }}</p>
-                                <p class="text-sm text-muted"><i class="far fa-clock mr-1"></i> {{ $i * 2 }} jam lalu</p>
-                            </div>
+                <a href="#" class="dropdown-item">
+                    <div class="media">
+                        <img src="../../dist/img/user{{ $i }}-128x128.jpg" alt="User Avatar" class="img-size-50 mr-3 img-circle shadow-sm">
+                        <div class="media-body">
+                            <h3 class="dropdown-item-title mb-1">
+                                User {{ $i }}
+                                <span class="float-right text-sm text-{{ ['danger','muted','warning'][$i - 1] }}">
+                                    <i class="fas fa-star"></i>
+                                </span>
+                            </h3>
+                            <p class="text-sm">Pesan dari user {{ $i }}</p>
+                            <p class="text-sm text-muted"><i class="far fa-clock mr-1"></i> {{ $i * 2 }} jam lalu</p>
                         </div>
-                    </a>
-                    @if($i < 3)
-                        <div class="dropdown-divider"></div>
-                    @endif
-                @endforeach
-                <a href="#" class="dropdown-item dropdown-footer text-center text-primary">Lihat Semua Pesan</a>
+                    </div>
+                </a>
+                @if($i < 3)
+                    <div class="dropdown-divider">
+            </div>
+            @endif
+            @endforeach
+            <a href="#" class="dropdown-item dropdown-footer text-center text-primary">Lihat Semua Pesan</a>
             </div>
         </li>
 
@@ -105,6 +106,31 @@
             <a class="nav-link" data-widget="control-sidebar" data-slide="true" href="#" role="button" title="Sidebar">
                 <i class="fas fa-th-large"></i>
             </a>
+        </li>
+        <li class="nav-item">
+
+
+            <a href="{{ url('/logout') }}" class="nav-link"
+
+
+                onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+
+
+                <i class="fas fa-sign-out-alt"></i> Logout
+
+
+            </a>
+
+
+            <form id="logout-form" action="{{ url('/logout') }}" method="GET" style="display: none;">
+
+
+                @csrf
+
+
+            </form>
+
+
         </li>
     </ul>
 </nav>
