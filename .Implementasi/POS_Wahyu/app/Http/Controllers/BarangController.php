@@ -36,7 +36,7 @@ class BarangController extends Controller
         if ($request->kategori_id) {
             $barangs->where('kategori_id', $request->kategori_id);
         }
-            
+
         return DataTables::of($barangs)
             // menambahkan kolom index / no urut (default nama kolom: DT_RowIndex)
             ->addIndexColumn()
@@ -48,11 +48,11 @@ class BarangController extends Controller
                 //     . csrf_field() . method_field('DELETE') .
                 //     '<button type="submit" class="btn btn-danger btn-sm" onclick="return confirm(\'Apakah Anda yakin menghapus data ini?\');">Hapus</button></form>';
                 $btn = '<button onclick="modalAction(\'' . url('/barang/' . $barang->barang_id .
-                '/show_ajax') . '\')" class="btn btn-info btn-sm">Detail</button> ';
+                    '/show_ajax') . '\')" class="btn btn-info btn-sm">Detail</button> ';
                 $btn .= '<button onclick="modalAction(\'' . url('/barang/' . $barang->barang_id .
-                '/edit_ajax') . '\')" class="btn btn-warning btn-sm">Edit</button> ';
-                 $btn .= '<button onclick="modalAction(\'' . url('/barang/' . $barang->barang_id .
-                '/delete_ajax') . '\')" class="btn btn-danger btn-sm">Hapus</button> ';
+                    '/edit_ajax') . '\')" class="btn btn-warning btn-sm">Edit</button> ';
+                $btn .= '<button onclick="modalAction(\'' . url('/barang/' . $barang->barang_id .
+                    '/delete_ajax') . '\')" class="btn btn-danger btn-sm">Hapus</button> ';
                 return $btn;
             })
             ->rawColumns(['aksi']) // memberitahu bahwa kolom aksi adalah html
@@ -102,7 +102,7 @@ class BarangController extends Controller
         $barang = Barang::find($id);
         $kategori = Kategori::select('kategori_id', 'kategori_nama')->get();
 
-        return view('barang.edit_ajax', ['kategori' => $kategori ,'barang' => $barang]);
+        return view('barang.edit_ajax', ['kategori' => $kategori, 'barang' => $barang]);
     }
 
     public function update_ajax(Request $request, string $id)
@@ -170,5 +170,4 @@ class BarangController extends Controller
         }
         return redirect('/');
     }
-
 }
