@@ -66,6 +66,12 @@ class BarangController extends Controller
             ->with('kategori', $kategori);
     }
 
+    public function show_ajax($id)
+    {
+        $barang = \App\Models\Barang::with('kategori')->find($id);
+        return view('barang.show_ajax', compact('barang'));
+    }
+
     public function store_ajax(Request $request)
     {
         // cek apakah request berupa ajax
