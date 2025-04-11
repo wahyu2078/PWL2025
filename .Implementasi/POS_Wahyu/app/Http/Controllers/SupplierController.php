@@ -62,6 +62,13 @@ class SupplierController extends Controller
         return view('supplier.create_ajax');
     }
 
+    public function show_ajax($id)
+    {
+        $supplier = Supplier::find($id);
+        return view('supplier.show_ajax', compact('supplier'));
+    }
+
+
     public function store_ajax(Request $request)
     {
         // cek apakah request berupa ajax
