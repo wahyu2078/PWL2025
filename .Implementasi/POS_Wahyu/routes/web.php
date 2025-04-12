@@ -54,6 +54,11 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{id}/delete_ajax', [LevelController::class, 'confirm_ajax']);
         Route::delete('/{id}/delete_ajax', [LevelController::class, 'delete_ajax']);
         Route::get('/{id}/show_ajax', [LevelController::class, 'show_ajax']);
+
+        Route::get('import', [LevelController::class, 'import']);
+        Route::post('import_ajax', [LevelController::class, 'import_ajax']);
+        Route::get('/export_excel', [LevelController::class, 'export_excel']);
+        Route::get('/export_pdf', [LevelController::class, 'export_pdf'])->name('export_pdf');
     });
 
     // ======= Kategori (AJAX Only) =======
