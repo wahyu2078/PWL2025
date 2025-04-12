@@ -35,6 +35,12 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{id}/delete_ajax', [UserController::class, 'confirm_ajax']);
         Route::delete('/{id}/delete_ajax', [UserController::class, 'delete_ajax']);
         Route::get('/{id}/show_ajax', [UserController::class, 'show_ajax']);
+
+        Route::get('/import', [UserController::class, 'import'])->name('import');
+        Route::post('/import_excel', [UserController::class, 'import_excel'])->name('import_excel');
+        Route::post('/import_ajax', [UserController::class, 'import_ajax'])->name('user.import_ajax');
+        Route::get('/export_excel', [UserController::class, 'export_excel']);
+        Route::get('/export_pdf', [UserController::class, 'export_pdf'])->name('export_pdf');
     });
 
     // ======= Level (AJAX Only - ADM) =======
