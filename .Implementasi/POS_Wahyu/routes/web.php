@@ -78,6 +78,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/import', [BarangController::class, 'import']); // form import
         Route::post('/import_ajax', [BarangController::class, 'import_ajax']); // proses import
         Route::get('/export_excel', [BarangController::class, 'export_excel'])->name('export_excel');
+        Route::get('/export_pdf', [BarangController::class, 'export_pdf']);
     });
 
     // ======= Supplier (AJAX Only) =======

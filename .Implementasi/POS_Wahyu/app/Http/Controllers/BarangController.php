@@ -288,4 +288,19 @@ class BarangController extends Controller
         $writer->save('php://output');
         exit;
     }
+
+    public function export_pdf()
+    {
+        $barang = Barang::with('kategori')
+            ->select('kategori_id', 'barang_kode', 'barang_nama', 'harga_beli', 'harga_jual')
+            ->orderByRaw("CAST(SUBSTRING(barang_kode, 4) AS UNSIGNED)")
+            ->limit(10)
+            ->get();
+
+        $pdf = Pdf::loadView('barang.export_pdf', ['barang' => $barang]);
+        $pdf->setPaper('a4', 'portrait');
+        $pdf->setOption('isRemoteEnabled', true);
+
+        return $pdf->stream('Data_Barang_' . date('Ymd_His') . '.pdf');
+    }
 }
