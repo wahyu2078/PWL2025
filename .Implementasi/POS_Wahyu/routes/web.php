@@ -72,6 +72,11 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{id}/delete_ajax', [KategoriController::class, 'confirm_ajax']);
         Route::delete('/{id}/delete_ajax', [KategoriController::class, 'delete_ajax']);
         Route::get('/{id}/show_ajax', [KategoriController::class, 'show_ajax']);
+
+        Route::get('/import', [KategoriController::class, 'import']);
+        Route::post('/import_ajax', [KategoriController::class, 'import_ajax']);
+        Route::get('/export_excel', [KategoriController::class, 'export_excel']);
+        Route::get('/export_pdf', [KategoriController::class, 'export_pdf'])->name('export_pdf');
     });    
 
     // ======= Barang (AJAX Only - ADM & MNG) =======
@@ -103,5 +108,10 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{id}/delete_ajax', [SupplierController::class, 'confirm_ajax']);
         Route::delete('/{id}/delete_ajax', [SupplierController::class, 'delete_ajax']);
         Route::get('/{id}/show_ajax', [SupplierController::class, 'show_ajax']);
+
+        Route::get('/import', [SupplierController::class, 'import']);
+        Route::post('/import_ajax', [SupplierController::class, 'import_ajax']);
+        Route::get('/export_excel', [SupplierController::class, 'export_excel']);
+        Route::get('/export_pdf', [SupplierController::class, 'export_pdf'])->name('export_pdf');
     });
 });
