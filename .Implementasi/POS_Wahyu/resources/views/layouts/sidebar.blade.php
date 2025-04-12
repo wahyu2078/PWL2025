@@ -21,79 +21,78 @@
                 </a>
             </li>
 
-            @if(Auth::user()->hasRole('ADM'))
-            <li class="nav-header">Data Pengguna</li>
-            <li class="nav-item">
-                <a href="{{ url('/level') }}" class="nav-link {{ ($activeMenu == 'level') ? 'active' : '' }}">
-                    <i class="nav-icon fas fa-layer-group"></i>
-                    <p>Level User</p>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="{{ url('/user') }}" class="nav-link {{ ($activeMenu == 'user') ? 'active' : '' }}">
-                    <i class="nav-icon far fa-user"></i>
-                    <p>Data User</p>
-                </a>
-            </li>
+            @if(Auth::check() && Auth::user()->hasRole('ADM'))
+                <li class="nav-header">Data Pengguna</li>
+                <li class="nav-item">
+                    <a href="{{ url('/level') }}" class="nav-link {{ ($activeMenu == 'level') ? 'active' : '' }}">
+                        <i class="nav-icon fas fa-layer-group"></i>
+                        <p>Level User</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url('/user') }}" class="nav-link {{ ($activeMenu == 'user') ? 'active' : '' }}">
+                        <i class="nav-icon far fa-user"></i>
+                        <p>Data User</p>
+                    </a>
+                </li>
             @endif
 
-            @if(Auth::user()->hasRole('ADM') || Auth::user()->hasRole('MNG') || Auth::user()->hasRole('STF'))
-            <li class="nav-header">Data Barang</li>
+            @if(Auth::check() && (Auth::user()->hasRole('ADM') || Auth::user()->hasRole('MNG') || Auth::user()->hasRole('STF')))
+                <li class="nav-header">Data Barang</li>
             @endif
 
-            @if(Auth::user()->hasRole('ADM') || Auth::user()->hasRole('MNG'))
-            <li class="nav-item">
-                <a href="{{ url('/kategori') }}" class="nav-link {{ ($activeMenu == 'kategori') ? 'active' : '' }}">
-                    <i class="nav-icon far fa-bookmark"></i>
-                    <p>Kategori Barang</p>
-                </a>
-            </li>
+            @if(Auth::check() && (Auth::user()->hasRole('ADM') || Auth::user()->hasRole('MNG')))
+                <li class="nav-item">
+                    <a href="{{ url('/kategori') }}" class="nav-link {{ ($activeMenu == 'kategori') ? 'active' : '' }}">
+                        <i class="nav-icon far fa-bookmark"></i>
+                        <p>Kategori Barang</p>
+                    </a>
+                </li>
             @endif
 
-            @if(Auth::user()->hasRole('ADM') || Auth::user()->hasRole('MNG') || Auth::user()->hasRole('STF'))
-            <li class="nav-item">
-                <a href="{{ url('/barang') }}" class="nav-link {{ ($activeMenu == 'barang') ? 'active' : '' }}">
-                    <i class="nav-icon far fa-list-alt"></i>
-                    <p>Data Barang</p>
-                </a>
-            </li>
+            @if(Auth::check() && (Auth::user()->hasRole('ADM') || Auth::user()->hasRole('MNG') || Auth::user()->hasRole('STF')))
+                <li class="nav-item">
+                    <a href="{{ url('/barang') }}" class="nav-link {{ ($activeMenu == 'barang') ? 'active' : '' }}">
+                        <i class="nav-icon far fa-list-alt"></i>
+                        <p>Data Barang</p>
+                    </a>
+                </li>
             @endif
 
-
-            @if(Auth::user()->hasRole('ADM') || Auth::user()->hasRole('MNG'))
-            <li class="nav-header">Data Supplier</li>
-            <li class="nav-item">
-                <a href="{{ url('/supplier') }}" class="nav-link {{ ($activeMenu == 'supplier') ? 'active' : '' }}">
-                    <i class="nav-icon fas fa-truck"></i>
-                    <p>Data Supplier</p>
-                </a>
-            </li>
+            @if(Auth::check() && (Auth::user()->hasRole('ADM') || Auth::user()->hasRole('MNG')))
+                <li class="nav-header">Data Supplier</li>
+                <li class="nav-item">
+                    <a href="{{ url('/supplier') }}" class="nav-link {{ ($activeMenu == 'supplier') ? 'active' : '' }}">
+                        <i class="nav-icon fas fa-truck"></i>
+                        <p>Data Supplier</p>
+                    </a>
+                </li>
             @endif
 
-            @if(Auth::user()->hasRole('ADM') || Auth::user()->hasRole('MNG') || Auth::user()->hasRole('STF'))
-            <li class="nav-header">Data Transaksi</li>
-            <li class="nav-item">
-                <a href="{{ url('/stok') }}" class="nav-link {{ ($activeMenu == 'stok') ? 'active' : '' }}">
-                    <i class="nav-icon fas fa-cubes"></i>
-                    <p>Stok Barang</p>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="{{ url('/penjualan') }}" class="nav-link {{ ($activeMenu == 'penjualan') ? 'active' : '' }}">
-                    <i class="nav-icon fas fa-cash-register"></i>
-                    <p>Transaksi Penjualan</p>
-                </a>
-            </li>
+            @if(Auth::check() && (Auth::user()->hasRole('ADM') || Auth::user()->hasRole('MNG') || Auth::user()->hasRole('STF')))
+                <li class="nav-header">Data Transaksi</li>
+                <li class="nav-item">
+                    <a href="{{ url('/stok') }}" class="nav-link {{ ($activeMenu == 'stok') ? 'active' : '' }}">
+                        <i class="nav-icon fas fa-cubes"></i>
+                        <p>Stok Barang</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url('/penjualan') }}" class="nav-link {{ ($activeMenu == 'penjualan') ? 'active' : '' }}">
+                        <i class="nav-icon fas fa-cash-register"></i>
+                        <p>Transaksi Penjualan</p>
+                    </a>
+                </li>
             @endif
 
-            @if(Auth::user()->hasRole('CUS'))
-            <li class="nav-header">Akses Pelanggan</li>
-            <li class="nav-item">
-                <a href="{{ url('/penjualan') }}" class="nav-link">
-                    <i class="nav-icon fas fa-shopping-cart"></i>
-                    <p>Riwayat Pembelian</p>
-                </a>
-            </li>
+            @if(Auth::check() && Auth::user()->hasRole('CUS'))
+                <li class="nav-header">Akses Pelanggan</li>
+                <li class="nav-item">
+                    <a href="{{ url('/penjualan') }}" class="nav-link">
+                        <i class="nav-icon fas fa-shopping-cart"></i>
+                        <p>Riwayat Pembelian</p>
+                    </a>
+                </li>
             @endif
 
         </ul>
