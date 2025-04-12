@@ -18,8 +18,10 @@ Route::get('/', [WelcomeController::class, 'index']);
 Route::get('/login', [AuthController::class, 'login'])->name('login');
 Route::post('/login', [AuthController::class, 'postlogin']);
 Route::get('/logout', [AuthController::class, 'logout'])->middleware('auth');
-Route::get('/register', [AuthController::class, 'register'])->name('register'); 
+Route::get('/register', [AuthController::class, 'register'])->name('register');
 Route::post('/register', [AuthController::class, 'storeRegister']);
+
+
 
 // Route yang hanya bisa diakses jika sudah login
 Route::middleware(['auth'])->group(function () {
@@ -41,6 +43,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/import_ajax', [UserController::class, 'import_ajax'])->name('user.import_ajax');
         Route::get('/export_excel', [UserController::class, 'export_excel']);
         Route::get('/export_pdf', [UserController::class, 'export_pdf'])->name('export_pdf');
+
+
     });
 
     // ======= Level (AJAX Only - ADM) =======
@@ -77,7 +81,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/import_ajax', [KategoriController::class, 'import_ajax']);
         Route::get('/export_excel', [KategoriController::class, 'export_excel']);
         Route::get('/export_pdf', [KategoriController::class, 'export_pdf'])->name('export_pdf');
-    });    
+    });
 
     // ======= Barang (AJAX Only - ADM & MNG) =======
     Route::middleware(['authorize:ADM,MNG,STF'])->prefix('barang')->group(function () {
@@ -115,3 +119,6 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/export_pdf', [SupplierController::class, 'export_pdf'])->name('export_pdf');
     });
 });
+
+Route::get('/profile', [UserController::class, 'profile'])->middleware('auth');
+Route::post('/profile', [UserController::class, 'updateProfile'])->middleware('auth');

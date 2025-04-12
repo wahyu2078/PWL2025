@@ -13,7 +13,15 @@ class User extends Authenticatable
 
     protected $table = 'm_user';
     protected $primaryKey = 'user_id';
-    protected $fillable = ['username', 'password', 'nama', 'level_id', 'created_at', 'updated_at'];
+    protected $fillable = [
+        'username',
+        'password',
+        'nama',
+        'level_id',
+        'foto', 
+        'created_at',
+        'updated_at',
+    ];
     protected $hidden = ['password'];
     protected $casts = [
         'password' => 'hashed',
@@ -44,7 +52,7 @@ class User extends Authenticatable
     }
 
     /**
-     * Mendapatkan kode role user
+     * Mendapatkan kode role 
      */
     public function getRole(): string
     {
