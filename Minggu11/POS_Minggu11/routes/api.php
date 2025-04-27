@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\LevelController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\KategoriController;
 use App\Http\Controllers\Api\BarangController;
+use App\Http\Controllers\Api\PenjualanController;
 
 /*
 |--------------------------------------------------------------------------
@@ -29,6 +30,9 @@ Route::post('/register1', RegisterController::class)->name('register1');
 Route::post('/barang1', [BarangController::class, 'store']);
 Route::get('/barang1', [BarangController::class, 'index']);
 Route::get('/barang1/{id}', [BarangController::class, 'show']);
+Route::post('/penjualan', [PenjualanController::class, 'store']);
+Route::get('/penjualan', [PenjualanController::class, 'index']);
+Route::get('/penjualan/{id}', [PenjualanController::class, 'show']);
 
 
 // Route user (hanya bisa diakses kalau sudah login / token valid)

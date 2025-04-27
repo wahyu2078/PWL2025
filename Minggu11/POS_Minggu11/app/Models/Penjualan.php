@@ -10,7 +10,7 @@ class Penjualan extends Model
 {
     use HasFactory;
 
-    protected $table = 'penjualan';
+    protected $table = 't_penjualan'; // ← ganti ini
     protected $primaryKey = 'penjualan_id';
 
     protected $fillable = [
