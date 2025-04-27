@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class UserModel extends Authenticatable implements JWTSubject
@@ -30,6 +31,25 @@ class UserModel extends Authenticatable implements JWTSubject
         'password' => 'hashed',
     ];
 
+    // Implementasi JWTSubject
+    public function getJWTIdentifier()
+    {
+        return $this->getKey();
+    }
+
+    public function getJWTCustomClaims()
+    {
+        return [];
+    }
+
+    // Accessor untuk foto
+    protected function foto(): Attribute
+    {
+        return Attribute::make(
+            get: fn($foto) => $foto ? url('/storage/posts/' . $foto) : null
+        );
+    }
+
     public function level(): BelongsTo
     {
         return $this->belongsTo(LevelModel::class, 'level_id', 'level_id');
@@ -48,16 +68,5 @@ class UserModel extends Authenticatable implements JWTSubject
     public function getRole(): string
     {
         return $this->level ? $this->level->level_kode : '-';
-    }
-
-    // Implementasi JWTSubject
-    public function getJWTIdentifier()
-    {
-        return $this->getKey();
-    }
-
-    public function getJWTCustomClaims()
-    {
-        return [];
     }
 }

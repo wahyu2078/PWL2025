@@ -25,6 +25,11 @@ use App\Http\Controllers\Api\BarangController;
 Route::post('/register', RegisterController::class)->name('register');
 Route::post('/login', LoginController::class)->name('login');
 Route::post('/logout', LogoutController::class)->name('logout');
+Route::post('/register1', RegisterController::class)->name('register1');
+Route::post('/barang1', [BarangController::class, 'store']);
+Route::get('/barang1', [BarangController::class, 'index']);
+Route::get('/barang1/{id}', [BarangController::class, 'show']);
+
 
 // Route user (hanya bisa diakses kalau sudah login / token valid)
 Route::middleware('auth:api')->group(function () {
