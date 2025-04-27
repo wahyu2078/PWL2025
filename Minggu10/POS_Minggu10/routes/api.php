@@ -19,6 +19,8 @@ use App\Http\Controllers\Api\LoginController;
 // Route register dan login
 Route::post('/register', RegisterController::class)->name('register');
 Route::post('/login', LoginController::class)->name('login');
+Route::post('/logout', App\Http\Controllers\Api\LogoutController::class)->name('logout');
+
 
 // Route user (hanya bisa diakses kalau sudah login / token valid)
 Route::middleware('auth:api')->get('/user', function (Request $request) {
